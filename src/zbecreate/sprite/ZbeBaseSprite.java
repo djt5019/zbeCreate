@@ -1,10 +1,7 @@
 package zbecreate.sprite;
 
-import java.awt.Canvas;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
@@ -30,7 +27,18 @@ public abstract class ZbeBaseSprite extends JPanel{
     }
 
     public void loadImage(){
-        String location = "C:\\Zoidberg\\zbeCreate\\src\\zbecreate\\resources\\about.png";
+        String location = "";
+
+        try{
+        location = new java.io.File(".").getCanonicalPath();
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+            System.exit(1);
+        }
+
+        location += "/src/zbecreate/resources/about.png";
+        System.out.println(location);
         myImage = java.awt.Toolkit.getDefaultToolkit().getImage(location);
         tileWidth = 20;
         tileHeight = 20;
