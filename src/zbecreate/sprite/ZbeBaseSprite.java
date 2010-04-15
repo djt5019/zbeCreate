@@ -40,8 +40,8 @@ public abstract class ZbeBaseSprite extends JPanel{
         location += "/src/zbecreate/resources/about.png";
         System.out.println(location);
         myImage = java.awt.Toolkit.getDefaultToolkit().getImage(location);
-        tileWidth = 20;
-        tileHeight = 20;
+        tileWidth = 40;
+        tileHeight = 40;
         System.out.printf("tileH = %d\nTileW = %d\n", tileHeight, tileWidth);
     }
 

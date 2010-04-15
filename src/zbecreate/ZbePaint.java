@@ -1,9 +1,7 @@
 package zbecreate;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -33,9 +31,8 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
             int w = temp.getTileWidth();
             int x = temp.getXPosition();
             int y = temp.getYPosition();
-            System.out.printf("Xpos = %d\nYpos = %d\nH = %d\nW = %d\n",x,y,h,w);
 
-            graph.drawImage(temp.getImage(), h, w, x, y, this);
+            graph.drawImage(temp.getImage(), x, y, h, w, this);
         }
     }
 
