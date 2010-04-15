@@ -1,6 +1,9 @@
 package zbecreate.sprite;
 
-import java.awt.Graphics;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetListener;
 import java.awt.geom.Point2D;
 import javax.swing.JPanel;
 
@@ -18,19 +21,29 @@ public abstract class ZbeBaseSprite extends JPanel{
     protected java.awt.Image myImage;
     protected int tileWidth;
     protected int tileHeight;
-    
+    protected String location;
+
+    private DropTarget dropTarget;
+    private DropTargetListener dtListener;
+    private int acceptableActions = DnDConstants.ACTION_MOVE;
 
     public ZbeBaseSprite(){
-        tileWidth  = 0;
-        tileHeight = 0;
+        tileWidth = tileHeight = 50;
         position = new Point2D.Double();
+
+        this.dtListener = new DTListener();
+
+        this.dropTarget = new DropTarget(this,
+                          this.acceptableActions,
+                          this.dtListener,
+                          true);
+        
     }
 
     public void loadImage(){
-        String location = "";
-
+        
         try{
-        location = new java.io.File(".").getCanonicalPath();
+            location = new java.io.File(".").getCanonicalPath();
         }
         catch(Exception ex){
             ex.printStackTrace();
@@ -38,11 +51,8 @@ public abstract class ZbeBaseSprite extends JPanel{
         }
 
         location += "/src/zbecreate/resources/about.png";
-        System.out.println(location);
+
         myImage = java.awt.Toolkit.getDefaultToolkit().getImage(location);
-        tileWidth = 40;
-        tileHeight = 40;
-        System.out.printf("tileH = %d\nTileW = %d\n", tileHeight, tileWidth);
     }
 
     public java.awt.Image getImage(){
@@ -67,14 +77,6 @@ public abstract class ZbeBaseSprite extends JPanel{
 
     public int getTileWidth(){ return this.tileWidth; }
     public int getTileHeight(){ return this.tileHeight; }
-
-    @Override
-    public void paintComponents(Graphics g) {
-        super.paintComponents(g);
-
-        if( myImage != null)
-            g.drawImage(myImage, tileWidth, tileHeight, this);
-    }
 
     public abstract void exportXML();
     

@@ -24,24 +24,25 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
     public void paintComponent(Graphics g){
         super.paintComponent(g);
         Graphics2D graph = (Graphics2D) g;
-
         for(int i = 0; i < list.size(); i++){
+
             ZbeBaseSprite temp = list.get(i);
             int h = temp.getTileHeight();
             int w = temp.getTileWidth();
             int x = temp.getXPosition();
             int y = temp.getYPosition();
 
-            graph.drawImage(temp.getImage(), x, y, h, w, this);
+            graph.drawImage(temp.getImage(), x-(h/2), y-(w/2), h, w, this);
         }
     }
 
     public void placeSprite(int x, int y){
         ZbeBaseSprite temp = new ZbeHeroSprite();
+        
         temp.loadImage();
         temp.setPosition(x, y);
         list.add(temp);
-        System.out.printf("List size = %d\n", list.size());
+        
         repaint();
     }
 
