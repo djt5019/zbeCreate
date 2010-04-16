@@ -8,6 +8,8 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 import zbecreate.sprite.*;
+import zbecreate.ZbeCreateView.mouseSelection;
+import static zbecreate.ZbeCreateView.mouse;
 
 public class ZbePaint extends JPanel implements MouseMotionListener, MouseListener {
 
@@ -24,6 +26,11 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
     public void paintComponent(Graphics g){
         super.paintComponent(g);
         Graphics2D graph = (Graphics2D) g;
+
+        if( !mouse.equals(mouseSelection.PLACE) )
+            return;
+
+
         for(int i = 0; i < list.size(); i++){
 
             ZbeBaseSprite temp = list.get(i);
@@ -53,15 +60,12 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
         placeSprite(x,y);
     }
 
-    public void mouseDragged(MouseEvent e) {
-    }
-
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    public void mouseMoved(MouseEvent e) {}
+    
+    public void mouseDragged(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e){}
+    public void mouseMoved(MouseEvent e)   {}
     public void mouseEntered(MouseEvent e) {}
-    public void mouseExited(MouseEvent e) {}
-    public void mouseClicked(MouseEvent e){}
+    public void mouseExited(MouseEvent e)  {}
+    public void mouseClicked(MouseEvent e) {}
 
 } 

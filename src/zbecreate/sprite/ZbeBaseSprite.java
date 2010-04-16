@@ -1,9 +1,5 @@
 package zbecreate.sprite;
 
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetListener;
 import java.awt.geom.Point2D;
 import javax.swing.JPanel;
 
@@ -23,21 +19,10 @@ public abstract class ZbeBaseSprite extends JPanel{
     protected int tileHeight;
     protected String location;
 
-    private DropTarget dropTarget;
-    private DropTargetListener dtListener;
-    private int acceptableActions = DnDConstants.ACTION_MOVE;
-
     public ZbeBaseSprite(){
         tileWidth = tileHeight = 50;
         position = new Point2D.Double();
 
-        this.dtListener = new DTListener();
-
-        this.dropTarget = new DropTarget(this,
-                          this.acceptableActions,
-                          this.dtListener,
-                          true);
-        
     }
 
     public void loadImage(){
