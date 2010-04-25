@@ -18,26 +18,19 @@ public abstract class ZbeBaseSprite extends JPanel{
     protected int tileWidth;
     protected int tileHeight;
     protected String location;
+    protected int tileNumber;
+    protected int palleteNumber;
+    protected int hFlipValue;
+    protected int vFlipValue;
+    
 
     public ZbeBaseSprite(){
         tileWidth = tileHeight = 50;
         position = new Point2D.Double();
-
     }
 
-    public void loadImage(){
-        
-        try{
-            location = new java.io.File(".").getCanonicalPath();
-        }
-        catch(Exception ex){
-            ex.printStackTrace();
-            System.exit(1);
-        }
-
-        location += "/src/zbecreate/resources/about.png";
-
-        myImage = java.awt.Toolkit.getDefaultToolkit().getImage(location);
+    public void loadImage(String imageLocation){
+        myImage = java.awt.Toolkit.getDefaultToolkit().getImage(imageLocation);
     }
 
     public java.awt.Image getImage(){

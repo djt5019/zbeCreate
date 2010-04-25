@@ -14,9 +14,10 @@ public class ZbeHeroSprite extends ZbeBaseSprite{
     private int health = 0;
     private int lives  = 0;    
 
-    public ZbeHeroSprite() {
+    public ZbeHeroSprite(String location) {
         health = 100;
         lives  = 5;
+        loadImage(location);
     }
 
     public void setLives(int l){

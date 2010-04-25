@@ -7,6 +7,7 @@ package zbecreate.sprite;
 public class ZbePlatformSprite extends ZbeBaseSprite{
 
     public ZbePlatformSprite(String name){
+        loadImage(name);
     }
     
     @Override

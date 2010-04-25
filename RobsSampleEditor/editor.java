@@ -4,14 +4,10 @@
  * @author rmb5299
  */
 import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.*;
 import javax.swing.*;
-import java.applet.AudioClip;
 
 
 

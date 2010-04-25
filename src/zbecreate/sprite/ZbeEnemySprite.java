@@ -17,9 +17,10 @@ public class ZbeEnemySprite extends ZbeBaseSprite{
     private int lives;
 
 
-    public ZbeEnemySprite(String name) {
+    public ZbeEnemySprite(String location) {
         health = 100;
         lives  = 5;
+        loadImage(location);
     }
 
     @Override
