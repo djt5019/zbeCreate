@@ -14,10 +14,10 @@ public class ZbeHeroSprite extends ZbeBaseSprite{
     private int health = 0;
     private int lives  = 0;    
 
-    public ZbeHeroSprite(String location) {
+    public ZbeHeroSprite(int tid, int pid, int hF, int vF, String loc) {
+        super( tid, pid, hF, vF, loc);
         health = 100;
         lives  = 5;
-        loadImage(location);
     }
 
     public void setLives(int l){

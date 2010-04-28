@@ -1,6 +1,8 @@
 package zbecreate.sprite;
 
+import java.awt.Image;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,26 +20,34 @@ import javax.swing.JPanel;
 public class ZbeBaseSprite extends JPanel{
 
     protected Point2D.Double position;
-    protected java.awt.Image myImage;
+    protected Image myImage;
     protected int tileWidth;
     protected int tileHeight;
     protected String location;
     
-    protected int tileNumber;
-    protected int palleteNumber;
+    protected int tileID;
+    protected int paletteID;
     protected int hFlipValue;
     protected int vFlipValue;
     
-    public ZbeBaseSprite(){
-        tileWidth = tileHeight = 50;
-        position = new Point2D.Double();
+    public ZbeBaseSprite(int tileId, int paletteId, int hFlip, int vFlip, String loc){
+        tileID     = tileId;
+        paletteID  = paletteId;
+        hFlipValue = hFlip;
+        vFlipValue = vFlip;
+        location   = loc;
+        tileWidth  = tileHeight = 50;
+        position   = new Point2D.Double();
+        loadImage(location);
     }
 
     public void loadImage(String imageLocation){
+        if( imageLocation == null)
+            return;
         myImage = java.awt.Toolkit.getDefaultToolkit().getImage(imageLocation);
     }
 
-    public java.awt.Image getImage(){ return this.myImage; }
+    public Image getImage(){ return this.myImage; }
     public void deleteImage(){ this.myImage = null; }
 
     public void setPosition(int x, int y){ this.position.setLocation(x,y); }
@@ -48,15 +58,15 @@ public class ZbeBaseSprite extends JPanel{
     public int getTileHeight(){ return this.tileHeight; }
     public int getHFlipValue(){ return this.hFlipValue; }
     public int getVFlipValue(){ return this.vFlipValue; }
-    public int getPalletteNum(){ return this.palleteNumber; }
-    public int getTileID() { return this.tileNumber; }
+    public int getPalletteNum(){ return this.paletteID; }
+    public int getTileID() { return this.tileID; }
 
     public void setTileWidth(int width){ this.tileWidth = width; }
     public void setTileHeight(int height){ this.tileHeight = height; }
     public void setHFlipValue(int hFlip){ this.hFlipValue = hFlip; }
     public void setVFlipValue(int vFlip){ this.vFlipValue = vFlip; }
-    public void setPalletteNum(int pallete){ this.palleteNumber = pallete; }
-    public void setTileID(int tileNum) { this.tileNumber = tileNum; }
+    public void setPalletteNum(int pallete){ this.paletteID = pallete; }
+    public void setTileID(int tileNum) { this.tileID = tileNum; }
 
     public static void exportXML(ArrayList<ZbeBaseSprite> list) throws IOException{
         if( list == null || list.isEmpty() )
@@ -81,8 +91,8 @@ public class ZbeBaseSprite extends JPanel{
             
             out.write(statement);
         }
-        out.write("\n     </row>\n");
-        out.write("  </background>\n");
+        out.write("\n\t\t</row>\n");
+        out.write("\t</background>\n");
         out.write("\n</Zbebackground>");
         
         out.close();
