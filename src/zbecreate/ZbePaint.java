@@ -4,10 +4,13 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.ImageIcon;
@@ -18,6 +21,7 @@ import zbecreate.sprite.*;
 import zbecreate.ZbeCreateView.mouseSelection;
 import static zbecreate.ZbeCreateView.mouse;
 import static zbecreate.ZbeCreateView.previewPanel;
+import static zbecreate.ZbeCreateView.exportXMLBtn;
 
 public class ZbePaint extends JPanel implements MouseMotionListener, MouseListener {
 
@@ -58,6 +62,15 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
         addMouseListener(this);
         addMouseMotionListener(this);
 
+       exportXMLBtn.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    System.out.println("EXPORTING");
+                    ZbeBaseSprite.exportXML( list );
+                }catch(IOException ex){
+                    ex.printStackTrace();
+                }
+            }});
     }
 
 
@@ -89,11 +102,11 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
     }
 
     public void placeSprite(int x, int y){
-        
+
         ZbeBaseSprite temp = new ZbeHeroSprite(imageLocation);
         temp.setPosition(x, y);
         list.add(temp);
-        
+
         repaint();
     }
 
@@ -115,17 +128,17 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
             }
             return;
         }
-        
+
         if( !mouse.equals( mouseSelection.PLACE) )
             return;
-        
+
         int x = e.getX();
         int y = e.getY();
 
         placeSprite(x,y);
     }
 
-    
+
     public void mouseDragged(MouseEvent e) {}
     public void mouseReleased(MouseEvent e){}
     public void mouseMoved(MouseEvent e)   {}

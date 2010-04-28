@@ -23,7 +23,6 @@ public class ZbeEnemySprite extends ZbeBaseSprite{
         loadImage(location);
     }
 
-    @Override
     public void exportXML(){
         throw new UnsupportedOperationException("Not supported yet.");
     }

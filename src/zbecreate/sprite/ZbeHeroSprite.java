@@ -32,7 +32,6 @@ public class ZbeHeroSprite extends ZbeBaseSprite{
     public int getLives() { return lives; }
 
     
-    @Override
     public void exportXML(){
         throw new UnsupportedOperationException("Not supported yet.");
     }

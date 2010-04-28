@@ -4,6 +4,8 @@
 
 package zbecreate;
 
+import java.awt.Color;
+import java.awt.GridLayout;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -15,28 +17,34 @@ import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 /**
  * The application's main frame.
  */
 public class ZbeCreateView extends FrameView implements ActionListener{
 
-    public String spriteImageLocation;
+    protected String spriteImageLocation;
+    public static enum mouseSelection{ SELECT, DELETE, PLACE};
+    public static mouseSelection mouse = mouseSelection.SELECT;
 
-    public enum mouseSelection{ SELECT, DELETE, PLACE};
-    static public mouseSelection mouse = mouseSelection.SELECT;
+    public static JLabel propertyLabel;
+    public static JLabel hFlipLabel;
+    public static JLabel vFlipLabel;
 
-    public mouseSelection getSelection() { return ZbeCreateView.mouse; }
-    public void setSelection(mouseSelection m){ ZbeCreateView.mouse = m; }
 
     public ZbeCreateView(SingleFrameApplication app) {
         super(app);
 
         initComponents();
 
-        buttonGroup1.add(selectSpriteBtn);
-        buttonGroup1.add(placeSpriteBtn);
-        buttonGroup1.add(deleteSpriteBtn);
+        propertyLabel = new JLabel("Sprite Properties");
+        hFlipLabel = new JLabel("Sprite H-Flip Value");
+        vFlipLabel = new JLabel("Sprite V-Flip Value");
+
+        mouseSelectionBtnGroup.add(selectSpriteBtn);
+        mouseSelectionBtnGroup.add(placeSpriteBtn);
+        mouseSelectionBtnGroup.add(deleteSpriteBtn);
 
         selectSpriteBtn.setActionCommand("SELECT");
         placeSpriteBtn.setActionCommand("PLACE");
@@ -46,7 +54,7 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         placeSpriteBtn.addActionListener( this);
         deleteSpriteBtn.addActionListener(this);
 
-        buttonGroup1.setSelected(selectSpriteBtn.getModel(), true);
+        mouseSelectionBtnGroup.setSelected(selectSpriteBtn.getModel(), true);
 
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
@@ -100,6 +108,8 @@ public class ZbeCreateView extends FrameView implements ActionListener{
                     progressBar.setValue(value);
                 }
             }
+
+
         });
     }
 
@@ -118,9 +128,6 @@ public class ZbeCreateView extends FrameView implements ActionListener{
             System.out.println("MOUSE = DELETE");
             mouse = mouseSelection.DELETE;
         }
-
-
-
     }
 
     @Action
@@ -144,10 +151,19 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         placeSpriteBtn = new javax.swing.JRadioButton();
         deleteSpriteBtn = new javax.swing.JRadioButton();
         jSeparator1 = new javax.swing.JSeparator();
-        jLabel1 = new javax.swing.JLabel();
         previewPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        propertiesPanel = new javax.swing.JPanel();
+        exportXMLBtn = new javax.swing.JButton();
+        spritePropertiesLabel = new javax.swing.JLabel();
+        tileIDLabel = new javax.swing.JLabel();
+        tileIDtxt = new javax.swing.JFormattedTextField();
+        paletteIDLabel = new javax.swing.JLabel();
+        paletteIDtxt = new javax.swing.JFormattedTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        hFlipcBox = new javax.swing.JComboBox();
+        vFlipCbox = new javax.swing.JComboBox();
+        jSeparator2 = new javax.swing.JSeparator();
+        drawScrollPanel = new javax.swing.JScrollPane();
         drawingPanel = new ZbePaint();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
@@ -160,9 +176,10 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         statusAnimationLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
         jFrame1 = new javax.swing.JFrame();
-        buttonGroup1 = new javax.swing.ButtonGroup();
+        mouseSelectionBtnGroup = new javax.swing.ButtonGroup();
         jMenu1 = new javax.swing.JMenu();
         showGridlinesOptionMenuItem = new javax.swing.JCheckBoxMenuItem();
+        spriteSelectionBtnGroup = new javax.swing.ButtonGroup();
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(zbecreate.ZbeCreateApp.class).getContext().getResourceMap(ZbeCreateView.class);
         mainPanel.setBackground(resourceMap.getColor("mainPanel.background")); // NOI18N
@@ -170,20 +187,22 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         mainPanel.setLayout(new java.awt.BorderLayout());
 
         sidePanel.setName("sidePanel"); // NOI18N
+        sidePanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         selectSpriteBtn.setText(resourceMap.getString("selectSpriteBtn.text")); // NOI18N
         selectSpriteBtn.setName("selectSpriteBtn"); // NOI18N
+        sidePanel.add(selectSpriteBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, -1, -1));
 
         placeSpriteBtn.setText(resourceMap.getString("placeSpriteBtn.text")); // NOI18N
         placeSpriteBtn.setName("placeSpriteBtn"); // NOI18N
+        sidePanel.add(placeSpriteBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, -1, -1));
 
         deleteSpriteBtn.setText(resourceMap.getString("deleteSpriteBtn.text")); // NOI18N
         deleteSpriteBtn.setName("deleteSpriteBtn"); // NOI18N
+        sidePanel.add(deleteSpriteBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 80, -1, -1));
 
         jSeparator1.setName("jSeparator1"); // NOI18N
-
-        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
-        jLabel1.setName("jLabel1"); // NOI18N
+        sidePanel.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 350, 170, 10));
 
         previewPanel.setBackground(resourceMap.getColor("previewPanel.background")); // NOI18N
         previewPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -193,92 +212,79 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         previewPanel.setLayout(previewPanelLayout);
         previewPanelLayout.setHorizontalGroup(
             previewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 101, Short.MAX_VALUE)
+            .addGap(0, 88, Short.MAX_VALUE)
         );
         previewPanelLayout.setVerticalGroup(
             previewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 82, Short.MAX_VALUE)
+            .addGap(0, 68, Short.MAX_VALUE)
         );
 
-        jScrollPane1.setName("jScrollPane1"); // NOI18N
+        sidePanel.add(previewPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 140, 90, 70));
 
-        propertiesPanel.setName("propertiesPanel"); // NOI18N
+        exportXMLBtn.setText(resourceMap.getString("exportXMLBtn.text")); // NOI18N
+        exportXMLBtn.setName("exportXMLBtn"); // NOI18N
+        sidePanel.add(exportXMLBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 530, -1, -1));
 
-        javax.swing.GroupLayout propertiesPanelLayout = new javax.swing.GroupLayout(propertiesPanel);
-        propertiesPanel.setLayout(propertiesPanelLayout);
-        propertiesPanelLayout.setHorizontalGroup(
-            propertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 798, Short.MAX_VALUE)
-        );
-        propertiesPanelLayout.setVerticalGroup(
-            propertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 160, Short.MAX_VALUE)
-        );
+        spritePropertiesLabel.setText(resourceMap.getString("spritePropertiesLabel.text")); // NOI18N
+        spritePropertiesLabel.setName("spritePropertiesLabel"); // NOI18N
+        sidePanel.add(spritePropertiesLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 370, -1, -1));
 
-        jScrollPane1.setViewportView(propertiesPanel);
+        tileIDLabel.setText(resourceMap.getString("tileIDLabel.text")); // NOI18N
+        tileIDLabel.setName("tileIDLabel"); // NOI18N
+        sidePanel.add(tileIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 400, -1, -1));
 
-        javax.swing.GroupLayout sidePanelLayout = new javax.swing.GroupLayout(sidePanel);
-        sidePanel.setLayout(sidePanelLayout);
-        sidePanelLayout.setHorizontalGroup(
-            sidePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(sidePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(sidePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(sidePanelLayout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(sidePanelLayout.createSequentialGroup()
-                        .addGroup(sidePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(selectSpriteBtn)
-                            .addComponent(placeSpriteBtn)
-                            .addComponent(deleteSpriteBtn)
-                            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .addGroup(sidePanelLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addContainerGap(55, Short.MAX_VALUE))))
-            .addGroup(sidePanelLayout.createSequentialGroup()
-                .addGap(32, 32, 32)
-                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(35, 35, 35))
-        );
-        sidePanelLayout.setVerticalGroup(
-            sidePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(sidePanelLayout.createSequentialGroup()
-                .addGap(13, 13, 13)
-                .addComponent(selectSpriteBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(placeSpriteBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(deleteSpriteBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        tileIDtxt.setText(resourceMap.getString("tileIDtxt.text")); // NOI18N
+        tileIDtxt.setName("tileIDtxt"); // NOI18N
+        sidePanel.add(tileIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 400, 70, -1));
+
+        paletteIDLabel.setText(resourceMap.getString("paletteIDLabel.text")); // NOI18N
+        paletteIDLabel.setName("paletteIDLabel"); // NOI18N
+        sidePanel.add(paletteIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 430, -1, -1));
+
+        paletteIDtxt.setName("paletteIDtxt"); // NOI18N
+        sidePanel.add(paletteIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 430, 70, -1));
+
+        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
+        jLabel2.setName("jLabel2"); // NOI18N
+        sidePanel.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 460, -1, -1));
+
+        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setName("jLabel3"); // NOI18N
+        sidePanel.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 490, -1, -1));
+
+        hFlipcBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Enabled", "Disabled" }));
+        hFlipcBox.setName("hFlipcBox"); // NOI18N
+        sidePanel.add(hFlipcBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 460, -1, 20));
+
+        vFlipCbox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Enabled", "Disabled" }));
+        vFlipCbox.setName("vFlipCbox"); // NOI18N
+        sidePanel.add(vFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 490, -1, 20));
+
+        jSeparator2.setName("jSeparator2"); // NOI18N
+        sidePanel.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 120, 170, 10));
 
         mainPanel.add(sidePanel, java.awt.BorderLayout.LINE_START);
 
+        drawScrollPanel.setName("drawScrollPanel"); // NOI18N
+
         drawingPanel.setBackground(resourceMap.getColor("drawingPanel.background")); // NOI18N
         drawingPanel.setName("drawingPanel"); // NOI18N
+        drawingPanel.setPreferredSize(new java.awt.Dimension(2000, 2000));
 
         javax.swing.GroupLayout drawingPanelLayout = new javax.swing.GroupLayout(drawingPanel);
         drawingPanel.setLayout(drawingPanelLayout);
         drawingPanelLayout.setHorizontalGroup(
             drawingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 665, Short.MAX_VALUE)
+            .addGap(0, 2000, Short.MAX_VALUE)
         );
         drawingPanelLayout.setVerticalGroup(
             drawingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 414, Short.MAX_VALUE)
+            .addGap(0, 2000, Short.MAX_VALUE)
         );
 
-        mainPanel.add(drawingPanel, java.awt.BorderLayout.CENTER);
+        drawScrollPanel.setViewportView(drawingPanel);
+
+        mainPanel.add(drawScrollPanel, java.awt.BorderLayout.CENTER);
 
         menuBar.setName("menuBar"); // NOI18N
 
@@ -316,11 +322,11 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         statusPanel.setLayout(statusPanelLayout);
         statusPanelLayout.setHorizontalGroup(
             statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 835, Short.MAX_VALUE)
+            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 870, Short.MAX_VALUE)
             .addGroup(statusPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 651, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 686, Short.MAX_VALUE)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statusAnimationLabel)
@@ -364,26 +370,36 @@ public class ZbeCreateView extends FrameView implements ActionListener{
 
     // <editor-fold>
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JRadioButton deleteSpriteBtn;
-    private javax.swing.JPanel drawingPanel;
+    protected javax.swing.JRadioButton deleteSpriteBtn;
+    protected javax.swing.JScrollPane drawScrollPanel;
+    protected javax.swing.JPanel drawingPanel;
+    public static javax.swing.JButton exportXMLBtn;
+    private javax.swing.JComboBox hFlipcBox;
     private javax.swing.JFrame jFrame1;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
-    private javax.swing.JRadioButton placeSpriteBtn;
+    private javax.swing.ButtonGroup mouseSelectionBtnGroup;
+    private javax.swing.JLabel paletteIDLabel;
+    private javax.swing.JFormattedTextField paletteIDtxt;
+    protected javax.swing.JRadioButton placeSpriteBtn;
     public static javax.swing.JPanel previewPanel;
     private javax.swing.JProgressBar progressBar;
-    private javax.swing.JPanel propertiesPanel;
-    private javax.swing.JRadioButton selectSpriteBtn;
+    protected javax.swing.JRadioButton selectSpriteBtn;
     public static javax.swing.JCheckBoxMenuItem showGridlinesOptionMenuItem;
     private javax.swing.JPanel sidePanel;
+    private javax.swing.JLabel spritePropertiesLabel;
+    private javax.swing.ButtonGroup spriteSelectionBtnGroup;
     private javax.swing.JLabel statusAnimationLabel;
     private javax.swing.JLabel statusMessageLabel;
     private javax.swing.JPanel statusPanel;
+    private javax.swing.JLabel tileIDLabel;
+    private javax.swing.JFormattedTextField tileIDtxt;
+    private javax.swing.JComboBox vFlipCbox;
     // End of variables declaration//GEN-END:variables
     //</editor-fold>
 
@@ -393,5 +409,4 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     private final Icon[] busyIcons = new Icon[15];
     private int busyIconIndex = 0;
     private JDialog aboutBox;
-
 }
