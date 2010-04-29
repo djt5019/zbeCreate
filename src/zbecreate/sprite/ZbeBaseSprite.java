@@ -2,12 +2,12 @@ package zbecreate.sprite;
 
 import java.awt.Image;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JPanel;
+import zbecreate.ZbePaint;
 
 /**
  * @author Dan
@@ -29,15 +29,20 @@ public class ZbeBaseSprite extends JPanel{
     protected int paletteID;
     protected int hFlipValue;
     protected int vFlipValue;
+    protected int numSquares;
+    protected int spriteNumber;
     
-    public ZbeBaseSprite(int tileId, int paletteId, int hFlip, int vFlip, String loc){
-        tileID     = tileId;
-        paletteID  = paletteId;
-        hFlipValue = hFlip;
-        vFlipValue = vFlip;
-        location   = loc;
-        tileWidth  = tileHeight = 50;
-        position   = new Point2D.Double();
+    public ZbeBaseSprite(int num, int tileId, int paletteId, int hFlip, int vFlip, String loc){
+        spriteNumber = num;
+        tileID       = tileId;
+        paletteID    = paletteId;
+        hFlipValue   = hFlip;
+        vFlipValue   = vFlip;
+        location     = loc;
+        tileWidth    = tileHeight = 50;
+        position     = new Point2D.Double();
+        numSquares   = (int)Math.ceil( (float)tileHeight / ZbePaint.getTileSize() )+1;
+        
         loadImage(location);
     }
 
@@ -53,13 +58,14 @@ public class ZbeBaseSprite extends JPanel{
     public void setPosition(int x, int y){ this.position.setLocation(x,y); }
     public int getXPosition(){ return (int)position.x; }
     public int getYPosition(){ return (int)position.y; }
-
+    public int getSpriteNum(){ return this.spriteNumber; }
     public int getTileWidth(){ return this.tileWidth; }
     public int getTileHeight(){ return this.tileHeight; }
     public int getHFlipValue(){ return this.hFlipValue; }
     public int getVFlipValue(){ return this.vFlipValue; }
     public int getPalletteNum(){ return this.paletteID; }
     public int getTileID() { return this.tileID; }
+    public int getNumSquares(){ return this.numSquares; }
 
     public void setTileWidth(int width){ this.tileWidth = width; }
     public void setTileHeight(int height){ this.tileHeight = height; }

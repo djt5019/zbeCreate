@@ -8,6 +8,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -23,19 +24,27 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
     private ArrayList<ZbeBaseSprite> list;
     private final int levelHeight = 100;
     private final int levelWidth  = 100;
-    private final int tileSize    = 8;
+    private static final int tileSize    = 8;
     private JFileChooser imageChooser;
     private ImageIcon icon;
     private JLabel iconLabel;
     private String imageLocation;
+    private ZbeBaseSprite[][] level;
+    private static int count = 0;
 
     public ZbePaint() {
         list = new ArrayList<ZbeBaseSprite>();
         imageChooser = new JFileChooser();
         iconLabel = new JLabel();
+        zbeFilter filter = new zbeFilter();
+        level = new ZbeBaseSprite[1000][1000];
+
+        this.addMouseListener(this);
+        this.addMouseMotionListener(this);
+        previewPanel.addMouseListener(this);
+
         this.setSize(levelHeight, levelWidth);
 
-        zbeFilter filter = new zbeFilter();
         imageChooser.setFileFilter(filter);
 
         try{
@@ -45,14 +54,9 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
 
         addPreviewImage(imageLocation);
 
-        iconLabel.setVisible(true);
         previewPanel.add(iconLabel);
-        previewPanel.addMouseListener(this);
-
-        addMouseListener(this);
-        addMouseMotionListener(this);
-
-       exportXMLBtn.addActionListener( new ActionListener() {
+        
+        exportXMLBtn.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try{
                     System.out.println("EXPORTING");
@@ -94,22 +98,21 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
             int x = temp.getXPosition();
             int y = temp.getYPosition();
 
-            if( mouse.equals(mouseSelection.PLACE) ){
-                System.out.printf("Printing sprite: %d\n", list.size());
-                graph.drawImage(temp.getImage(), x-(h/2), y-(w/2), h, w, this);
-            }
+            graph.drawImage(temp.getImage(), x-(h/2), y-(w/2), h, w, this);
         }
     }
 
     public void placeSprite(int x, int y){
 
+        int modX = x/tileSize;
+        int modY = y/tileSize;
         int hF = hFlipCbox.getSelectedIndex();
         int vF = vFlipCbox.getSelectedIndex();
         int tid;
         int pid;
         String tileId = tileIDtxt.getText();
         String paleId = paletteIDtxt.getText();
-
+        
         try{
             tid = Integer.parseInt(tileId);
         }
@@ -128,22 +131,79 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
             return;
         }
 
-        ZbeBaseSprite temp = new ZbeHeroSprite(tid,pid,hF,vF,imageLocation);
+        ZbeBaseSprite temp = new ZbeHeroSprite(count++,tid,pid,hF,vF,imageLocation);
         temp.setPosition(x, y);
+        int squares = temp.getNumSquares();
+
+        int diffX = modX - squares;
+        int diffY = modY - squares;
+
+        if( diffX < 1)
+            diffX = 0;
+
+        if( diffY < 1)
+            diffY = 0;
+        
+        for( int i = diffX; i < modX + squares; ++i )
+            for( int j = diffY; j < modY + squares; ++j)
+                level[i][j] = temp;
+        
         list.add(temp);
 
         repaint();
     }
 
+    public static int getTileSize(){
+        return ZbePaint.tileSize;
+    }
+
+    public synchronized void deleteSprite(int x, int y){
+        ZbeBaseSprite sprite = level[x][y];
+
+        if( sprite == null)
+            return;
+
+        int squares = sprite.getNumSquares();
+        int modX = x - squares;
+        int modY = y - squares;
+
+        if( modX < 1)
+            modX = 0;
+        if( modY < 1)
+            modY = 0;
 
 
-    public void deleteSprite(){
+        int key = sprite.getSpriteNum();
+        System.out.printf("ModX = %d\nSquares = %d\nKey = %d\n",modX,squares,key);
+
+        for( ZbeBaseSprite s : list )
+            if( key == s.getSpriteNum() ){
+                list.remove(s);
+                break;
+            }
+                
+
+        sprite.deleteImage();
+        
+
+        for(int i = modX; i < modX + squares; ++i )
+            for(int j = modY; j < modY + squares; ++j){
+                level[i][j] = null;
+            }
+
+        sprite = null;
+
+
+        repaint();
     }
 
     public void moveSprite(){
     }
 
     public void mousePressed(MouseEvent e) {
+
+        // If the user clicks on the Tile Preview Panel open the
+        // window dialog
         if( e.getSource().equals(previewPanel) )
         {
             int result = imageChooser.showOpenDialog(this);
@@ -154,13 +214,23 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
             return;
         }
 
-        if( !mouse.equals( mouseSelection.PLACE) )
-            return;
 
-        int x = e.getX();
-        int y = e.getY();
+        if( mouse.equals(mouseSelection.DELETE)){
+            int x = e.getX()/tileSize;
+            int y = e.getY()/tileSize;
 
-        placeSprite(x,y);
+            deleteSprite(x,y);
+        }
+        else if( mouse.equals(mouseSelection.PLACE)){
+            int x = e.getX();
+            int y = e.getY();
+
+            //System.out.printf("Block[%d][%d]\n",x/tileSize,y/tileSize);
+            if( level[x/tileSize][y/tileSize] == null)
+                placeSprite(x,y);
+        }
+
+        repaint();
     }
 
 

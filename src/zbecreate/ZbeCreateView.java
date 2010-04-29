@@ -38,10 +38,6 @@ public class ZbeCreateView extends FrameView implements ActionListener{
 
         initComponents();
 
-        propertyLabel = new JLabel("Sprite Properties");
-        hFlipLabel = new JLabel("Sprite H-Flip Value");
-        vFlipLabel = new JLabel("Sprite V-Flip Value");
-
         mouseSelectionBtnGroup.add(selectSpriteBtn);
         mouseSelectionBtnGroup.add(placeSpriteBtn);
         mouseSelectionBtnGroup.add(deleteSpriteBtn);

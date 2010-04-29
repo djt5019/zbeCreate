@@ -14,8 +14,8 @@ public class ZbeHeroSprite extends ZbeBaseSprite{
     private int health = 0;
     private int lives  = 0;    
 
-    public ZbeHeroSprite(int tid, int pid, int hF, int vF, String loc) {
-        super( tid, pid, hF, vF, loc);
+    public ZbeHeroSprite(int num, int tid, int pid, int hF, int vF, String loc) {
+        super( num,tid, pid, hF, vF, loc);
         health = 100;
         lives  = 5;
     }
