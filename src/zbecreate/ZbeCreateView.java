@@ -4,8 +4,6 @@
 
 package zbecreate;
 
-import java.awt.Color;
-import java.awt.GridLayout;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -17,7 +15,6 @@ import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 
 /**
  * The application's main frame.
@@ -25,13 +22,8 @@ import javax.swing.JLabel;
 public class ZbeCreateView extends FrameView implements ActionListener{
 
     protected String spriteImageLocation;
-    public static enum mouseSelection{ SELECT, DELETE, PLACE};
+    public static enum mouseSelection{ SELECT, DELETE, PLACE, SETBG, UNSETBG};
     public static mouseSelection mouse = mouseSelection.SELECT;
-
-    public static JLabel propertyLabel;
-    public static JLabel hFlipLabel;
-    public static JLabel vFlipLabel;
-
 
     public ZbeCreateView(SingleFrameApplication app) {
         super(app);
@@ -41,14 +33,21 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         mouseSelectionBtnGroup.add(selectSpriteBtn);
         mouseSelectionBtnGroup.add(placeSpriteBtn);
         mouseSelectionBtnGroup.add(deleteSpriteBtn);
+        mouseSelectionBtnGroup.add(setBgBtn);
+        mouseSelectionBtnGroup.add(unsetBgBtn);
+
 
         selectSpriteBtn.setActionCommand("SELECT");
         placeSpriteBtn.setActionCommand("PLACE");
         deleteSpriteBtn.setActionCommand("DELETE");
+        setBgBtn.setActionCommand("SETBG");
+        unsetBgBtn.setActionCommand("UNSETBG");
 
         selectSpriteBtn.addActionListener(this);
         placeSpriteBtn.addActionListener( this);
         deleteSpriteBtn.addActionListener(this);
+        setBgBtn.addActionListener(this);
+        unsetBgBtn.addActionListener(this);
 
         mouseSelectionBtnGroup.setSelected(selectSpriteBtn.getModel(), true);
 
@@ -124,6 +123,14 @@ public class ZbeCreateView extends FrameView implements ActionListener{
             System.out.println("MOUSE = DELETE");
             mouse = mouseSelection.DELETE;
         }
+        else if( e.getActionCommand().equals("SETBG")){
+            System.out.println("MOUSE = SETBG");
+            mouse = mouseSelection.SETBG;
+        }
+        else if( e.getActionCommand().equals("UNSETBG")){
+            System.out.println("MOUSE = UNSETBG");
+            mouse = mouseSelection.UNSETBG;
+        }
     }
 
     @Action
@@ -161,6 +168,8 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         jSeparator2 = new javax.swing.JSeparator();
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        setBgBtn = new javax.swing.JRadioButton();
+        unsetBgBtn = new javax.swing.JRadioButton();
         drawScrollPanel = new javax.swing.JScrollPane();
         drawingPanel = new ZbePaint();
         menuBar = new javax.swing.JMenuBar();
@@ -200,66 +209,74 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         sidePanel.add(deleteSpriteBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 90, -1, -1));
 
         jSeparator1.setName("jSeparator1"); // NOI18N
-        sidePanel.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 280, 170, 10));
+        sidePanel.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 340, 170, 10));
 
         previewPanel.setBackground(resourceMap.getColor("previewPanel.background")); // NOI18N
         previewPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         previewPanel.setName("previewPanel"); // NOI18N
-        previewPanel.setLayout(new java.awt.GridLayout());
-        sidePanel.add(previewPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 180, 80, 80));
+        previewPanel.setLayout(new java.awt.GridLayout(1, 0));
+        sidePanel.add(previewPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 80, 80));
 
         exportXMLBtn.setText(resourceMap.getString("exportXMLBtn.text")); // NOI18N
         exportXMLBtn.setName("exportXMLBtn"); // NOI18N
-        sidePanel.add(exportXMLBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 490, -1, -1));
+        sidePanel.add(exportXMLBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 550, -1, -1));
 
         spritePropertiesLabel.setText(resourceMap.getString("spritePropertiesLabel.text")); // NOI18N
         spritePropertiesLabel.setName("spritePropertiesLabel"); // NOI18N
-        sidePanel.add(spritePropertiesLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 300, -1, -1));
+        sidePanel.add(spritePropertiesLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 360, -1, -1));
 
         tileIDLabel.setText(resourceMap.getString("tileIDLabel.text")); // NOI18N
         tileIDLabel.setName("tileIDLabel"); // NOI18N
-        sidePanel.add(tileIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 330, -1, -1));
+        sidePanel.add(tileIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 390, -1, -1));
 
         tileIDtxt.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         tileIDtxt.setText(resourceMap.getString("tileIDtxt.text")); // NOI18N
         tileIDtxt.setName("tileIDtxt"); // NOI18N
-        sidePanel.add(tileIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 330, 80, -1));
+        sidePanel.add(tileIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 390, 80, -1));
 
         paletteIDLabel.setText(resourceMap.getString("paletteIDLabel.text")); // NOI18N
         paletteIDLabel.setName("paletteIDLabel"); // NOI18N
-        sidePanel.add(paletteIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 360, -1, -1));
+        sidePanel.add(paletteIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 420, -1, -1));
 
         paletteIDtxt.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         paletteIDtxt.setText(resourceMap.getString("paletteIDtxt.text")); // NOI18N
         paletteIDtxt.setName("paletteIDtxt"); // NOI18N
-        sidePanel.add(paletteIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 360, 80, -1));
+        sidePanel.add(paletteIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 420, 80, -1));
 
         jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
         jLabel2.setName("jLabel2"); // NOI18N
-        sidePanel.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 390, -1, -1));
+        sidePanel.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 450, -1, -1));
 
         jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
         jLabel3.setName("jLabel3"); // NOI18N
-        sidePanel.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 420, -1, -1));
+        sidePanel.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 480, -1, -1));
 
         hFlipCbox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Disabled", "Enabled" }));
         hFlipCbox.setName("hFlipCbox"); // NOI18N
-        sidePanel.add(hFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 390, -1, 20));
+        sidePanel.add(hFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 450, -1, 20));
 
         vFlipCbox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Disabled", "Enabled" }));
         vFlipCbox.setName("vFlipCbox"); // NOI18N
-        sidePanel.add(vFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 420, -1, 20));
+        sidePanel.add(vFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 480, -1, 20));
 
         jSeparator2.setName("jSeparator2"); // NOI18N
-        sidePanel.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 130, 170, 10));
+        sidePanel.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 190, 170, 10));
 
         jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
         jLabel1.setName("jLabel1"); // NOI18N
-        sidePanel.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 150, -1, -1));
+        sidePanel.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 210, -1, -1));
 
         jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
         jLabel4.setName("jLabel4"); // NOI18N
         sidePanel.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, -1, -1));
+
+        setBgBtn.setText(resourceMap.getString("setBgBtn.text")); // NOI18N
+        setBgBtn.setName("setBgBtn"); // NOI18N
+        sidePanel.add(setBgBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 120, -1, -1));
+
+        unsetBgBtn.setText(resourceMap.getString("unsetBgBtn.text")); // NOI18N
+        unsetBgBtn.setName("unsetBgBtn"); // NOI18N
+        sidePanel.add(unsetBgBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 150, -1, -1));
 
         mainPanel.add(sidePanel, java.awt.BorderLayout.LINE_START);
 
@@ -390,6 +407,7 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     public static javax.swing.JPanel previewPanel;
     private javax.swing.JProgressBar progressBar;
     protected javax.swing.JRadioButton selectSpriteBtn;
+    private javax.swing.JRadioButton setBgBtn;
     public static javax.swing.JCheckBoxMenuItem showGridlinesOptionMenuItem;
     private javax.swing.JPanel sidePanel;
     private javax.swing.JLabel spritePropertiesLabel;
@@ -399,6 +417,7 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     private javax.swing.JPanel statusPanel;
     private javax.swing.JLabel tileIDLabel;
     public static javax.swing.JFormattedTextField tileIDtxt;
+    private javax.swing.JRadioButton unsetBgBtn;
     public static javax.swing.JComboBox vFlipCbox;
     // End of variables declaration//GEN-END:variables
     //</editor-fold>

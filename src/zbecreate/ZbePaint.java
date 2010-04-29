@@ -8,7 +8,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -27,6 +26,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
     private static final int tileSize    = 8;
     private JFileChooser imageChooser;
     private ImageIcon icon;
+    private Image background;
     private JLabel iconLabel;
     private String imageLocation;
     private ZbeBaseSprite[][] level;
@@ -90,6 +90,14 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
                 g.drawLine(0, j*tileSize, levelWidth*tileSize, j*tileSize);
                 g.drawLine(i*tileSize, 0, i*tileSize, levelHeight*tileSize);
             }
+
+        if( background != null){
+            int size = background.getWidth(this);
+            
+            for(int i = 0; i < levelWidth*levelWidth; i+=size)
+                graph.drawImage(background,i,0, null);
+
+        }
 
         for(int i = 0; i < list.size(); i++){
             ZbeBaseSprite temp = list.get(i);
@@ -174,7 +182,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
 
 
         int key = sprite.getSpriteNum();
-        System.out.printf("ModX = %d\nSquares = %d\nKey = %d\n",modX,squares,key);
+        //System.out.printf("ModX = %d\nSquares = %d\nKey = %d\n",modX,squares,key);
 
         for( ZbeBaseSprite s : list )
             if( key == s.getSpriteNum() ){
@@ -182,7 +190,6 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
                 break;
             }
                 
-
         sprite.deleteImage();
         
 
@@ -214,7 +221,6 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
             return;
         }
 
-
         if( mouse.equals(mouseSelection.DELETE)){
             int x = e.getX()/tileSize;
             int y = e.getY()/tileSize;
@@ -225,9 +231,17 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
             int x = e.getX();
             int y = e.getY();
 
-            //System.out.printf("Block[%d][%d]\n",x/tileSize,y/tileSize);
             if( level[x/tileSize][y/tileSize] == null)
                 placeSprite(x,y);
+        }
+        else if( mouse.equals(mouseSelection.SETBG)){
+            try{
+                background = ImageIO.read( new File(imageLocation));
+            }catch(Exception ex){ }
+        }
+        else if( mouse.equals(mouseSelection.UNSETBG)){
+            background = null;
+            this.setBackground(Color.WHITE);
         }
 
         repaint();
