@@ -41,7 +41,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
-        previewPanel.addMouseListener(this);
+        colorPanel.addMouseListener(this);
 
         this.setSize(levelHeight, levelWidth);
 
@@ -54,7 +54,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
 
         addPreviewImage(imageLocation);
 
-        previewPanel.add(iconLabel);
+        colorPanel.add(iconLabel);
         
         exportXMLBtn.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -211,7 +211,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
 
         // If the user clicks on the Tile Preview Panel open the
         // window dialog
-        if( e.getSource().equals(previewPanel) )
+        if( e.getSource().equals(colorPanel) )
         {
             int result = imageChooser.showOpenDialog(this);
             if( result == JFileChooser.APPROVE_OPTION){
@@ -221,25 +221,25 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
             return;
         }
 
-        if( mouse.equals(mouseSelection.DELETE)){
+        if( mouse.equals(MouseSelection.DELETE)){
             int x = e.getX()/tileSize;
             int y = e.getY()/tileSize;
 
             deleteSprite(x,y);
         }
-        else if( mouse.equals(mouseSelection.PLACE)){
+        else if( mouse.equals(MouseSelection.PLACE)){
             int x = e.getX();
             int y = e.getY();
 
             if( level[x/tileSize][y/tileSize] == null)
                 placeSprite(x,y);
         }
-        else if( mouse.equals(mouseSelection.SETBG)){
+        else if( mouse.equals(MouseSelection.SETBG)){
             try{
                 background = ImageIO.read( new File(imageLocation));
             }catch(Exception ex){ }
         }
-        else if( mouse.equals(mouseSelection.UNSETBG)){
+        else if( mouse.equals(MouseSelection.UNSETBG)){
             background = null;
             this.setBackground(Color.WHITE);
         }
