@@ -48,4 +48,6 @@ public class ZbeTile{
     public int getTileID(){ return this.tileID; }
     public int getXcoord(){ return this.xCoord; }
     public int getYcoord(){ return this.yCoord;}
+
+    public void setColor(Color newColor){ this.myColor = newColor; }
 }

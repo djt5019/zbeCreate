@@ -9,8 +9,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -26,6 +24,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import javax.imageio.ImageIO;
 import javax.swing.Timer;
 import javax.swing.Icon;
@@ -41,14 +40,14 @@ import zbecreate.tile.ZbeTile;
 public class ZbeCreateView extends FrameView{
 
     public static enum MouseSelection { SELECT, DELETE, PLACE, SETBG, UNSETBG };
-    public static MouseSelection mouse = MouseSelection.SELECT;
+    public static MouseSelection mouse;
 
     private Color currentColor = Color.WHITE;
     private Color[] previousColors;
     private ArrayList<ZbeTile> tileList;
     private BufferedImage imageBuffer;
     private BufferedImage background;
-    private boolean[][] tileGraph;
+    private ZbeTile[][] tileGraph;
     private ZbeFilter filter;
     private int levelHeight;
     private int levelWidth;
@@ -57,7 +56,8 @@ public class ZbeCreateView extends FrameView{
         super(app);
 
         initComponents();
-        
+
+        mouse = MouseSelection.PLACE;
         levelWidth = drawingPanel.getPreferredSize().height;
         levelHeight = drawingPanel.getPreferredSize().width;
 
@@ -69,7 +69,8 @@ public class ZbeCreateView extends FrameView{
         initButtons();
         initXMLButton();
         
-        tileGraph = new boolean[levelWidth][levelHeight];
+        tileGraph = new ZbeTile[levelWidth][levelHeight];
+        
         previousColors = new Color[3];
         tileList = new ArrayList();
 
@@ -702,7 +703,11 @@ public class ZbeCreateView extends FrameView{
         public void mouseClicked(MouseEvent e)  {
             int x = e.getX();
             int y = e.getY();
-            placeTile(x,y);
+
+            if(mouse.equals(MouseSelection.PLACE))
+                placeTile(x,y);
+            else if(mouse.equals(MouseSelection.DELETE))
+                eraseTile(x,y);
             repaint();
         }
 
@@ -726,10 +731,45 @@ public class ZbeCreateView extends FrameView{
             int modY  = ((y - (y % size)));
             int tid   = modX + modY*levelWidth;
 
+            if(modX < 0 || modY < 0)
+                return;
+
             Rectangle r = new Rectangle(modX,modY,size,size);
             ZbeTile t = new ZbeTile(currentColor, tid, pid, hFlip, vFlip, modX, modY, r);
 
-            tileList.add(t);
+            System.out.printf("MODX = %d\nMODY = %d\n",modX,modY);
+            if( tileGraph[modX][modY] == null){
+
+                tileList.add(t);
+                tileGraph[modX][modY] = t;
+            }
+            else{
+                //If the tile has already been placed update the color
+                ZbeTile temp = tileGraph[modX][modY];
+                temp.setColor(currentColor);
+            }
+        }
+
+        public void eraseTile(int x, int y){
+            int modX  = ((x - (x % size)));
+            int modY  = ((y - (y % size)));
+            int tid   = modX + modY*levelWidth;
+
+            if( modX < 0 || modY < 0)
+                return;
+            
+            if(tileGraph[modX][modY] == null)
+                return;
+
+            tileGraph[modX][modY] = null;
+
+            for(ZbeTile temp : tileList){
+                if(temp.getTileID() == tid){
+                    tileList.remove(temp);
+                    System.out.println("TILE DELETED");
+                    break;
+                }
+            }
 
         }
         public void mousePressed(MouseEvent e)  {
@@ -743,7 +783,11 @@ public class ZbeCreateView extends FrameView{
             if( !mouseDragging)
                 return;
 
-            placeTile(e.getX(), e.getY());
+            if(mouse.equals(MouseSelection.PLACE))
+                placeTile(e.getX(), e.getY());
+            else if(mouse.equals(MouseSelection.DELETE))
+                eraseTile(e.getX(), e.getY());
+            
             repaint();
         }
 
