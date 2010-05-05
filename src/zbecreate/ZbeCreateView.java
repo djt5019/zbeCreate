@@ -49,12 +49,9 @@ public class ZbeCreateView extends FrameView{
     private BufferedImage imageBuffer;
     private BufferedImage background;
     private boolean[][] tileGraph;
-    private boolean mouseDragging = false;
-    private boolean mousePressed  = false;
     private ZbeFilter filter;
     private int levelHeight;
     private int levelWidth;
-    private int tileSize = ZbeTile.tileSize;
 
     public ZbeCreateView(SingleFrameApplication app) {
         super(app);
@@ -354,11 +351,11 @@ public class ZbeCreateView extends FrameView{
 
         placeTileBtn.setText(resourceMap.getString("placeTileBtn.text")); // NOI18N
         placeTileBtn.setName("placeTileBtn"); // NOI18N
-        sidePanel.add(placeTileBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 40, -1, -1));
+        sidePanel.add(placeTileBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, -1, -1));
 
         deleteTileBtn.setText(resourceMap.getString("deleteTileBtn.text")); // NOI18N
         deleteTileBtn.setName("deleteTileBtn"); // NOI18N
-        sidePanel.add(deleteTileBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 70, -1, -1));
+        sidePanel.add(deleteTileBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, -1, -1));
 
         jSeparator1.setName("jSeparator1"); // NOI18N
         sidePanel.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 370, 170, 10));
@@ -420,11 +417,11 @@ public class ZbeCreateView extends FrameView{
 
         setBgBtn.setText(resourceMap.getString("setBgBtn.text")); // NOI18N
         setBgBtn.setName("setBgBtn"); // NOI18N
-        sidePanel.add(setBgBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 100, -1, -1));
+        sidePanel.add(setBgBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, -1, -1));
 
         unsetBgBtn.setText(resourceMap.getString("unsetBgBtn.text")); // NOI18N
         unsetBgBtn.setName("unsetBgBtn"); // NOI18N
-        sidePanel.add(unsetBgBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 130, -1, -1));
+        sidePanel.add(unsetBgBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 130, -1, -1));
 
         prevColor3.setBackground(resourceMap.getColor("prevColor1.background")); // NOI18N
         prevColor3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -692,6 +689,10 @@ public class ZbeCreateView extends FrameView{
 
         private int size = ZbeTile.tileSize;
         private BufferedImage image;
+        private int prevX;
+        private int prevY;
+        private boolean mouseDragging = false;
+        private boolean mousePressed  = false;
 
         public DrawingArea(){
             this.addMouseListener(this);
@@ -715,15 +716,15 @@ public class ZbeCreateView extends FrameView{
          * @param y The Y coordinate where the user clicked
          */
         public void placeTile(int x, int y){
-
-            int tid   = tileList.size();
+            if( !mouse.equals(MouseSelection.PLACE))
+                return;
+            
             int pid   = currentColor.getRGB();
             int hFlip = hFlipCbox.getSelectedIndex();
             int vFlip = vFlipCbox.getSelectedIndex();
-            int modX  = x - (x % size);
-            int modY  = y - (y % size);
-
-            System.out.printf("modX = %d\nmodY = %d\n", modX, modY);
+            int modX  = ((x - (x % size)));
+            int modY  = ((y - (y % size)));
+            int tid   = modX + modY*levelWidth;
 
             Rectangle r = new Rectangle(modX,modY,size,size);
             ZbeTile t = new ZbeTile(currentColor, tid, pid, hFlip, vFlip, modX, modY, r);
@@ -731,15 +732,27 @@ public class ZbeCreateView extends FrameView{
             tileList.add(t);
 
         }
+        public void mousePressed(MouseEvent e)  {
+            if(mouseDragging == true)
+                return;
+
+            mouseDragging = true;
+        }
 
         public void mouseDragged(MouseEvent e) {
-            if( !mousePressed)
+            if( !mouseDragging)
                 return;
+
+            placeTile(e.getX(), e.getY());
+            repaint();
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            mouseDragging = false;
+            mousePressed  = false;
         }
 
         public void mouseMoved(MouseEvent e)    {}
-        public void mouseReleased(MouseEvent e) {}
-        public void mousePressed(MouseEvent e)  {}
         public void mouseEntered(MouseEvent e)  {}
         public void mouseExited(MouseEvent e)   {}
 
