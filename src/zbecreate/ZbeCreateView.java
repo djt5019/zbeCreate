@@ -35,8 +35,7 @@ import zbecreate.tile.ZbeTile;
  */
 public class ZbeCreateView extends FrameView implements ActionListener{
 
-
-    public static enum MouseSelection{ SELECT, DELETE, PLACE, SETBG, UNSETBG};
+    public static enum MouseSelection { SELECT, DELETE, PLACE, SETBG, UNSETBG };
     public static MouseSelection mouse = MouseSelection.SELECT;
 
     private ArrayList<ZbeTile> tileList;
@@ -46,6 +45,7 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     private boolean mouseDragging = false;
     private boolean mousePressed  = false;
 
+   
     public ZbeCreateView(SingleFrameApplication app) {
         super(app);
 
@@ -143,30 +143,34 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         });
     }
 
+    /**
+     * This function will help keep track of the colors that the user chooses
+     * by storing them into an array.  As a user selects a new color the old
+     * ones are shifted down by one to make room for the new color. The
+     * oldest color in the array is overwritten.
+     *
+     * @author Dan Tracy
+     * @param newColor The color that will be stored in the most recent color block
+     */
     private void shiftColors(Color newColor){
-        /**@author Dan Tracy
-         * @param newColor The color that will be stored in the most recent color block
-         * @return Void
-         * This function will help keep track of the colors that the user chooses
-         * by storing them into an array.  As a user selects a new color the old
-         * ones are shifted down by one to make room for the new color. The
-         * oldest color in the array is overwritten.
-         */
+        
         previousColors[2] = previousColors[1];
         previousColors[1] = previousColors[0];
         previousColors[0] = newColor;
         prevColor1.setBackground(previousColors[0]);
         prevColor2.setBackground(previousColors[1]);
         prevColor3.setBackground(previousColors[2]);
+
     }
 
+    /**
+     * The initColorPanel function will initalize the mouse action listeners
+     * for the color panel.  Upon clicking the colorPanel the user will be
+     * prompted with the JColorChooser in order to choose a new color.  The
+     * selected color will be saved into the currentColor variable.
+     * @author Dan Tracy
+     */
     private void initColorPanel() {
-        /**@author Dan Tracy
-         * The initColorPanel function will initalize the mouse action listeners
-         * for the color panel.  Upon clicking the colorPanel the user will be
-         * prompted with the JColorChooser in order to choose a new color.  The
-         * selected color will be saved into the currentColor variable.
-         */
         colorPanel.addMouseListener( new MouseListener(){
 
             public void mouseClicked(MouseEvent e)  {
@@ -183,14 +187,17 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         });
     }
 
+    /**
+     * The initPrevColorsPanel function will initalize the mouse action listeners
+     * for the previous color panels.  Upon clicking one of the three previous
+     * color panels the color contained within the panel will be copied into
+     * the currentColor variable.  Clicking on the panels will not cause the
+     * colors to shift.
+     * @author Dan Tracy
+     *
+     */
     private void initPrevColorsPanel(final JPanel panel){
-        /**@author Dan Tracy
-         * The initPrevColorsPanel function will initalize the mouse action listeners
-         * for the previous color panels.  Upon clicking one of the three previous
-         * color panels the color contained within the panel will be copied into
-         * the currentColor variable.  Clicking on the panels will not cause the
-         * colors to shift.
-         */
+        
         panel.addMouseListener( new MouseListener(){
 
             public void mouseClicked(MouseEvent e)  {
@@ -205,6 +212,9 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         });
     }
 
+    /**
+     * @param e
+     */
     public void actionPerformed(ActionEvent e){
 
         if( e.getActionCommand().equals("SELECT") ){
@@ -232,12 +242,14 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     }
 
 
+
+    /**
+     * The showAboutBox function will create an instance of the ZbeCreateAboutBox
+     * class and will display it to the user.
+     * @author Joe Balough
+     */
     @Action
     public void showAboutBox() {
-        /**@author Joe Balough
-         * The showAboutBox function will create an instance of the ZbeCreateAboutBox
-         * class and will display it to the user.
-         */
         if (aboutBox == null) {
             JFrame mainFrame = ZbeCreateApp.getApplication().getMainFrame();
             aboutBox = new ZbeCreateAboutBox(mainFrame);
@@ -590,14 +602,16 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     private JDialog aboutBox;
     private JDialog xmlBox;
 
+    /**
+     * This will iterate through the ArrayList of Tiles getting the tileID,
+     * paletteID, and horizontal/vertical flip values.  Upon each iteration
+     * the tile information will be written to the file "filename.xml".
+     * @author Dan Tracy
+     * @param filename The name of the file the user wishes to write to.
+     * @throws IOException
+     */
     public void exportXML(String filename) throws IOException{
-        /**@author Dan Tracy
-         * @param filename The name of the file the user wishes to write to.
-         * @throws IOException
-         * This will iterate through the ArrayList of Tiles getting the tileID,
-         * paletteID, and horizontal/vertical flip values.  Upon each iteration
-         * the tile information will be written to the file "filename.xml".
-         */
+
 
         if( tileList == null || tileList.isEmpty() )
             return;
@@ -626,15 +640,18 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         out.write("\n</Zbebackground>");
 
         out.close();
+        DrawingArea d;
+        //d.
 
     }
 
     private class DrawingArea extends JPanel implements MouseListener, MouseMotionListener{
-        /**@author Dan Tracy
+        /**
          * Will contain the functions that are relevant to the drawing area. The
          * purpose of this class is to create a panel upon which the user can draw.
          * The DrawingArea class will first initalize the mouse action listeners then
          * await for the user to interact with the panel.
+         * @author Dan Tracy
          */
 
         private int size = ZbeTile.tileSize;
@@ -651,16 +668,16 @@ public class ZbeCreateView extends FrameView implements ActionListener{
             repaint();
         }
 
+        /**
+         * This function will calculate the size of the tile which is
+         * by default 8x8 pixels.  After calculating the correct size and
+         * creating a rectangle that will fill the entire tile it will add
+         * it into the tileList.
+         * @author Dan Tracy
+         * @param x The X coordinate where the user clicked
+         * @param y The Y coordinate where the user clicked
+         */
         public void placeTile(int x, int y){
-            /**@author Dan Tracy
-             * @param x The X coordinate where the user clicked
-             * @param y The Y coordinate where the user clicked
-             * @return Void
-             * This function will calculate the size of the tile which is
-             * by default 8x8 pixels.  After calculating the correct size and
-             *creating a rectangle that will fill the entire tile it will add
-             * it into the tileList.
-             */
 
             int tid   = tileList.size();
             int pid   = currentColor.getRGB();
