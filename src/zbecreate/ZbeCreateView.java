@@ -6,6 +6,8 @@ package zbecreate;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
@@ -16,23 +18,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import zbecreate.tile.ZbeTile;
 
 /**
  * The application's main frame.
  */
 public class ZbeCreateView extends FrameView implements ActionListener{
 
+
     public static enum MouseSelection{ SELECT, DELETE, PLACE, SETBG, UNSETBG};
     public static MouseSelection mouse = MouseSelection.SELECT;
 
-    private Tile[][] list;
-    private final int tileSize = 8;
+    private ArrayList<ZbeTile> tileList;
+    private ZbeTile[][] tileGraph;
     private Color currentColor = Color.WHITE;
     private Color[] previousColors;
     private boolean mouseDragging = false;
@@ -42,23 +50,31 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         super(app);
 
         initComponents();
-        initDrawingPanel();
         initColorPanel();
-        initPrevPanel(prevColor1);
-        initPrevPanel(prevColor2);
-        initPrevPanel(prevColor3);
+        initPrevColorsPanel(prevColor1);
+        initPrevColorsPanel(prevColor2);
+        initPrevColorsPanel(prevColor3);
 
+        xmlBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(xmlBox == null){
+                    xmlBox = new JDialog();
+                    xmlBox.setVisible(true);
+                }
+            }
+        });
+        
         int x = drawingPanel.getPreferredSize().height;
         int y = drawingPanel.getPreferredSize().width;
         
-        list = new Tile[x][y];
+        tileGraph = new ZbeTile[x][y];
         previousColors = new Color[3];
+        tileList = new ArrayList();
         
         mouseSelectionBtnGroup.add(placeTileBtn);
         mouseSelectionBtnGroup.add(deleteTileBtn);
         mouseSelectionBtnGroup.add(setBgBtn);
         mouseSelectionBtnGroup.add(unsetBgBtn);
-
 
         placeTileBtn.setActionCommand("PLACE");
         deleteTileBtn.setActionCommand("DELETE");
@@ -127,40 +143,15 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         });
     }
 
-    private void initDrawingPanel(){
-        drawingPanel.addMouseListener( new MouseListener(){
-
-            public void mouseClicked(MouseEvent e)  {
-            
-            }
-
-            public void mouseReleased(MouseEvent e) {
-                mousePressed  = false;
-                
-            }
-
-            public void mousePressed(MouseEvent e)  {
-                mousePressed = true;
-            }
-
-            public void mouseEntered(MouseEvent e)  {}
-            public void mouseExited(MouseEvent e)   {}
-            
-        });
-
-        drawingPanel.addMouseMotionListener( new MouseMotionListener() {
-
-            public void mouseDragged(MouseEvent e) {
-                if( !mousePressed)
-                    return;
-
-            }
-            public void mouseMoved(MouseEvent e)   { }
-
-        } );
-    }
-
     private void shiftColors(Color newColor){
+        /**@author Dan Tracy
+         * @param newColor The color that will be stored in the most recent color block
+         * @return Void
+         * This function will help keep track of the colors that the user chooses
+         * by storing them into an array.  As a user selects a new color the old
+         * ones are shifted down by one to make room for the new color. The
+         * oldest color in the array is overwritten.
+         */
         previousColors[2] = previousColors[1];
         previousColors[1] = previousColors[0];
         previousColors[0] = newColor;
@@ -170,6 +161,12 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     }
 
     private void initColorPanel() {
+        /**@author Dan Tracy
+         * The initColorPanel function will initalize the mouse action listeners
+         * for the color panel.  Upon clicking the colorPanel the user will be
+         * prompted with the JColorChooser in order to choose a new color.  The
+         * selected color will be saved into the currentColor variable.
+         */
         colorPanel.addMouseListener( new MouseListener(){
 
             public void mouseClicked(MouseEvent e)  {
@@ -186,7 +183,14 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         });
     }
 
-    private void initPrevPanel(final JPanel panel){
+    private void initPrevColorsPanel(final JPanel panel){
+        /**@author Dan Tracy
+         * The initPrevColorsPanel function will initalize the mouse action listeners
+         * for the previous color panels.  Upon clicking one of the three previous
+         * color panels the color contained within the panel will be copied into
+         * the currentColor variable.  Clicking on the panels will not cause the
+         * colors to shift.
+         */
         panel.addMouseListener( new MouseListener(){
 
             public void mouseClicked(MouseEvent e)  {
@@ -202,9 +206,6 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     }
 
     public void actionPerformed(ActionEvent e){
-        if(e.getSource().equals(exportXMLBtn)){
-            return;
-        }
 
         if( e.getActionCommand().equals("SELECT") ){
             System.out.println("MOUSE = SELECT");
@@ -233,6 +234,10 @@ public class ZbeCreateView extends FrameView implements ActionListener{
 
     @Action
     public void showAboutBox() {
+        /**@author Joe Balough
+         * The showAboutBox function will create an instance of the ZbeCreateAboutBox
+         * class and will display it to the user.
+         */
         if (aboutBox == null) {
             JFrame mainFrame = ZbeCreateApp.getApplication().getMainFrame();
             aboutBox = new ZbeCreateAboutBox(mainFrame);
@@ -252,7 +257,6 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         deleteTileBtn = new javax.swing.JRadioButton();
         jSeparator1 = new javax.swing.JSeparator();
         colorPanel = new javax.swing.JPanel();
-        exportXMLBtn = new javax.swing.JButton();
         spritePropertiesLabel = new javax.swing.JLabel();
         tileIDLabel = new javax.swing.JLabel();
         tileIDtxt = new javax.swing.JFormattedTextField();
@@ -271,8 +275,9 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         prevColor2 = new javax.swing.JPanel();
         prevColor1 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
+        xmlBtn = new javax.swing.JButton();
         drawScrollPanel = new javax.swing.JScrollPane();
-        drawingPanel = new javax.swing.JPanel();
+        drawingPanel = new DrawingArea();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
@@ -306,7 +311,7 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         sidePanel.add(deleteTileBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 70, -1, -1));
 
         jSeparator1.setName("jSeparator1"); // NOI18N
-        sidePanel.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 360, 170, 10));
+        sidePanel.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 370, 170, 10));
 
         colorPanel.setBackground(resourceMap.getColor("colorPanel.background")); // NOI18N
         colorPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -314,47 +319,43 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         colorPanel.setLayout(new java.awt.GridLayout(1, 0));
         sidePanel.add(colorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 210, 50, 40));
 
-        exportXMLBtn.setText(resourceMap.getString("exportXMLBtn.text")); // NOI18N
-        exportXMLBtn.setName("exportXMLBtn"); // NOI18N
-        sidePanel.add(exportXMLBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 550, -1, -1));
-
         spritePropertiesLabel.setText(resourceMap.getString("spritePropertiesLabel.text")); // NOI18N
         spritePropertiesLabel.setName("spritePropertiesLabel"); // NOI18N
-        sidePanel.add(spritePropertiesLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 380, -1, -1));
+        sidePanel.add(spritePropertiesLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 390, -1, -1));
 
         tileIDLabel.setText(resourceMap.getString("tileIDLabel.text")); // NOI18N
         tileIDLabel.setName("tileIDLabel"); // NOI18N
-        sidePanel.add(tileIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 410, -1, -1));
+        sidePanel.add(tileIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 420, -1, -1));
 
         tileIDtxt.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         tileIDtxt.setText(resourceMap.getString("tileIDtxt.text")); // NOI18N
         tileIDtxt.setName("tileIDtxt"); // NOI18N
-        sidePanel.add(tileIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 410, 80, -1));
+        sidePanel.add(tileIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 420, 80, -1));
 
         paletteIDLabel.setText(resourceMap.getString("paletteIDLabel.text")); // NOI18N
         paletteIDLabel.setName("paletteIDLabel"); // NOI18N
-        sidePanel.add(paletteIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 440, -1, -1));
+        sidePanel.add(paletteIDLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 450, -1, -1));
 
         paletteIDtxt.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         paletteIDtxt.setText(resourceMap.getString("paletteIDtxt.text")); // NOI18N
         paletteIDtxt.setName("paletteIDtxt"); // NOI18N
-        sidePanel.add(paletteIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 440, 80, -1));
+        sidePanel.add(paletteIDtxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 450, 80, -1));
 
         jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
         jLabel2.setName("jLabel2"); // NOI18N
-        sidePanel.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 470, -1, -1));
+        sidePanel.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 480, -1, -1));
 
         jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
         jLabel3.setName("jLabel3"); // NOI18N
-        sidePanel.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 500, -1, -1));
+        sidePanel.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 510, -1, -1));
 
         hFlipCbox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Disabled", "Enabled" }));
         hFlipCbox.setName("hFlipCbox"); // NOI18N
-        sidePanel.add(hFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 470, -1, 20));
+        sidePanel.add(hFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 480, -1, 20));
 
         vFlipCbox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Disabled", "Enabled" }));
         vFlipCbox.setName("vFlipCbox"); // NOI18N
-        sidePanel.add(vFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 500, -1, 20));
+        sidePanel.add(vFlipCbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 510, -1, 20));
 
         jSeparator2.setName("jSeparator2"); // NOI18N
         sidePanel.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 170, 170, 10));
@@ -429,6 +430,10 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
         jLabel5.setName("jLabel5"); // NOI18N
         sidePanel.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 280, -1, -1));
+
+        xmlBtn.setText(resourceMap.getString("xmlBtn.text")); // NOI18N
+        xmlBtn.setName("xmlBtn"); // NOI18N
+        sidePanel.add(xmlBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 550, -1, -1));
 
         mainPanel.add(sidePanel, java.awt.BorderLayout.LINE_START);
 
@@ -541,7 +546,6 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     protected javax.swing.JRadioButton deleteTileBtn;
     protected javax.swing.JScrollPane drawScrollPanel;
     protected javax.swing.JPanel drawingPanel;
-    public static javax.swing.JButton exportXMLBtn;
     public static javax.swing.JComboBox hFlipCbox;
     private javax.swing.JFrame jFrame1;
     private javax.swing.JLabel jLabel1;
@@ -574,6 +578,7 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     public static javax.swing.JFormattedTextField tileIDtxt;
     private javax.swing.JRadioButton unsetBgBtn;
     public static javax.swing.JComboBox vFlipCbox;
+    private javax.swing.JButton xmlBtn;
     // End of variables declaration//GEN-END:variables
     //</editor-fold>
 
@@ -583,45 +588,121 @@ public class ZbeCreateView extends FrameView implements ActionListener{
     private final Icon[] busyIcons = new Icon[15];
     private int busyIconIndex = 0;
     private JDialog aboutBox;
+    private JDialog xmlBox;
 
+    public void exportXML(String filename) throws IOException{
+        /**@author Dan Tracy
+         * @param filename The name of the file the user wishes to write to.
+         * @throws IOException
+         * This will iterate through the ArrayList of Tiles getting the tileID,
+         * paletteID, and horizontal/vertical flip values.  Upon each iteration
+         * the tile information will be written to the file "filename.xml".
+         */
 
-    private class Tile extends JPanel{
-        private int hFlipValue;
-        private int vFlipValue;
-        private int tileID;
-        private int paletteID;
-        private Color myColor;
-        private int xCoord;
-        private int yCoord;
-        
-        public Tile(Color c, int tid, int pid, int hFlip, int vFlip, int x, int y){
-            this.tileID     = tid;
-            this.paletteID  = pid;
-            this.hFlipValue = hFlip;
-            this.vFlipValue = vFlip;
-            this.myColor    = c;
-            this.xCoord     = x;
-            this.yCoord     = y;
+        if( tileList == null || tileList.isEmpty() )
+            return;
+
+        BufferedWriter out = new BufferedWriter( new FileWriter(filename + ".xml") );
+
+        out.write("<Zbebackground>\n");
+        out.write("\t<background>\n");
+        out.write("\t\t<row>\n");
+        for( ZbeTile s : tileList){
+            String id = "id = \"" + s.getTileID() + "\"\n";
+            String pa = "palette = \"" + s.getPaletteID() + "\"\n";
+            String hF = "hflip = \"" + s.getHFlipValue() + "\"\n";
+            String vF = "hflip = \"" + s.getVFlipValue() + "\"\n";
+
+            String statement = "\t\t\t<file   " + id +
+                                   "\t\t\t\t" + pa +
+                                   "\t\t\t\t" + hF +
+                                   "\t\t\t\t" + vF +
+                                   "\t\t\t/>\n";
+
+            out.write(statement);
         }
+        out.write("\n\t\t</row>\n");
+        out.write("\t</background>\n");
+        out.write("\n</Zbebackground>");
+
+        out.close();
+
+    }
+
+    private class DrawingArea extends JPanel implements MouseListener, MouseMotionListener{
+        /**@author Dan Tracy
+         * Will contain the functions that are relevant to the drawing area. The
+         * purpose of this class is to create a panel upon which the user can draw.
+         * The DrawingArea class will first initalize the mouse action listeners then
+         * await for the user to interact with the panel.
+         */
+
+        private int size = ZbeTile.tileSize;
+
+        public DrawingArea(){
+            this.addMouseListener(this);
+            this.addMouseMotionListener(this);
+        }
+
+        public void mouseClicked(MouseEvent e)  {
+            int x = e.getX();
+            int y = e.getY();
+            placeTile(x,y);
+            repaint();
+        }
+
+        public void placeTile(int x, int y){
+            /**@author Dan Tracy
+             * @param x The X coordinate where the user clicked
+             * @param y The Y coordinate where the user clicked
+             * @return Void
+             * This function will calculate the size of the tile which is
+             * by default 8x8 pixels.  After calculating the correct size and
+             *creating a rectangle that will fill the entire tile it will add
+             * it into the tileList.
+             */
+
+            int tid   = tileList.size();
+            int pid   = currentColor.getRGB();
+            int hFlip = hFlipCbox.getSelectedIndex();
+            int vFlip = vFlipCbox.getSelectedIndex();
+            int modX  = x - (x % size);
+            int modY  = y - (y % size);
+
+            System.out.printf("modX = %d\nmodY = %d\n", modX, modY);
+
+            Rectangle r = new Rectangle(modX,modY,size,size);
+            ZbeTile t = new ZbeTile(currentColor, tid, pid, hFlip, vFlip, modX, modY, r);
+
+            tileList.add(t);
+
+        }
+
+        public void mouseDragged(MouseEvent e) {
+            if( !mousePressed)
+                return;
+        }
+
+        public void mouseMoved(MouseEvent e)    {}
+        public void mouseReleased(MouseEvent e) {}
+        public void mousePressed(MouseEvent e)  {}
+        public void mouseEntered(MouseEvent e)  {}
+        public void mouseExited(MouseEvent e)   {}
 
         @Override
         public void paintComponent(Graphics g){
-            super.paintComponents(g);
+            super.paintComponent(g);
+            Graphics2D graph = (Graphics2D)g;
+
+            System.out.println("TILES = "  + tileList.size());
+            for(ZbeTile temp : tileList){
+                graph.setColor(temp.getTileColor());
+                graph.fill(temp.getRect());
+            }
+
         }
-
-        public int getHFlipValue(){ return this.hFlipValue; }
-        public int getVFlipValue(){ return this.vFlipValue; }
-        public int getPaletteID() { return this.paletteID; }
-        public Color getTileColor() { return this.myColor; }
-        public int getTileID(){ return this.tileID; }
-        public int getXcoord(){ return this.xCoord; }
-        public int getYcoord(){ return this.yCoord;}
-
-        public void setHFlipValue(int hFlip){ this.hFlipValue = hFlip; }
-        public void setVFlipValue(int vFlip){ this.vFlipValue = vFlip; }
-        public void setPaletteID(int pid) { this.paletteID = pid; }
-        public void setTileColor(Color c){ this.myColor = c; }
-        public void setTileID(int tid){ this.tileID = tid; }
     }
+
+
 
 }

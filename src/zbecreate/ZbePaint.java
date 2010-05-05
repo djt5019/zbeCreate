@@ -41,7 +41,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
-        colorPanel.addMouseListener(this);
+       // colorPanel.addMouseListener(this);
 
         this.setSize(levelHeight, levelWidth);
 
@@ -54,17 +54,17 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
 
         addPreviewImage(imageLocation);
 
-        colorPanel.add(iconLabel);
+        //colorPanel.add(iconLabel);
         
-        exportXMLBtn.addActionListener( new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try{
-                    System.out.println("EXPORTING");
-                    ZbeBaseSprite.exportXML( list );
-                }catch(IOException ex){
-                    ex.printStackTrace();
-                }
-            }});
+        /*exportXMLBtn.addActionListener( new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+        try{
+        System.out.println("EXPORTING");
+        ZbeBaseSprite.exportXML( list );
+        }catch(IOException ex){
+        ex.printStackTrace();
+        }
+        }});*/
     }
 
     public void addPreviewImage(String location){
@@ -111,7 +111,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
     }
 
     public void placeSprite(int x, int y){
-
+/*
         int modX = x/tileSize;
         int modY = y/tileSize;
         int hF = hFlipCbox.getSelectedIndex();
@@ -159,6 +159,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
         list.add(temp);
 
         repaint();
+  */
     }
 
     public static int getTileSize(){
@@ -211,7 +212,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
 
         // If the user clicks on the Tile Preview Panel open the
         // window dialog
-        if( e.getSource().equals(colorPanel) )
+        /*if( e.getSource().equals(colorPanel) )
         {
             int result = imageChooser.showOpenDialog(this);
             if( result == JFileChooser.APPROVE_OPTION){
@@ -219,7 +220,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
                 addPreviewImage(imageLocation);
             }
             return;
-        }
+        }*/
 
         if( mouse.equals(MouseSelection.DELETE)){
             int x = e.getX()/tileSize;
