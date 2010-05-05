@@ -35,7 +35,7 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
         list = new ArrayList<ZbeBaseSprite>();
         imageChooser = new JFileChooser();
         iconLabel = new JLabel();
-        zbeFilter filter = new zbeFilter();
+        ZbeFilter filter = new ZbeFilter("Image Files (Jpg, Png, Gif)");
         level = new ZbeBaseSprite[1000][1000];
 
         this.addMouseListener(this);
@@ -254,47 +254,5 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e)  {}
     public void mouseClicked(MouseEvent e) {}
-
-    private class zbeFilter extends javax.swing.filechooser.FileFilter{
-        private ArrayList exts;
-        private String desc;
-
-        public zbeFilter(){
-            exts = new ArrayList();
-            exts.add("jpg");
-            exts.add("png");
-            exts.add("gif");
-            setDescription("Image Files (jpg, png, gif)");
-        }
-
-        public void add(String ex){
-            exts.add(ex);
-        }
-
-        @Override
-        public boolean accept(File f) {
-            if ( f.isDirectory() ) {
-                return true;
-            }
-            else if ( f.isFile() ) {
-                Iterator it = exts.iterator();
-                while (it.hasNext()) {
-                    if (f.getName().endsWith((String) it.next()))
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void setDescription(String s){
-            desc = s;
-        }
-
-        @Override
-        public String getDescription() {
-            return desc;
-        }
-    }
 
 } 

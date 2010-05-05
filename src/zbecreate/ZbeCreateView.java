@@ -9,6 +9,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -18,10 +20,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
 import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JColorChooser;
@@ -33,60 +38,43 @@ import zbecreate.tile.ZbeTile;
 /**
  * The application's main frame.
  */
-public class ZbeCreateView extends FrameView implements ActionListener{
+public class ZbeCreateView extends FrameView{
 
     public static enum MouseSelection { SELECT, DELETE, PLACE, SETBG, UNSETBG };
     public static MouseSelection mouse = MouseSelection.SELECT;
 
-    private ArrayList<ZbeTile> tileList;
-    private ZbeTile[][] tileGraph;
     private Color currentColor = Color.WHITE;
     private Color[] previousColors;
+    private ArrayList<ZbeTile> tileList;
+    private BufferedImage imageBuffer;
+    private BufferedImage background;
+    private boolean[][] tileGraph;
     private boolean mouseDragging = false;
     private boolean mousePressed  = false;
+    private ZbeFilter filter;
+    private int levelHeight;
+    private int levelWidth;
+    private int tileSize = ZbeTile.tileSize;
 
-   
     public ZbeCreateView(SingleFrameApplication app) {
         super(app);
 
         initComponents();
+        
+        levelWidth = drawingPanel.getPreferredSize().height;
+        levelHeight = drawingPanel.getPreferredSize().width;
+
+        initBackground();
         initColorPanel();
         initPrevColorsPanel(prevColor1);
         initPrevColorsPanel(prevColor2);
         initPrevColorsPanel(prevColor3);
-
-        xmlBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if(xmlBox == null){
-                    xmlBox = new JDialog();
-                    xmlBox.setVisible(true);
-                }
-            }
-        });
+        initButtons();
+        initXMLButton();
         
-        int x = drawingPanel.getPreferredSize().height;
-        int y = drawingPanel.getPreferredSize().width;
-        
-        tileGraph = new ZbeTile[x][y];
+        tileGraph = new boolean[levelWidth][levelHeight];
         previousColors = new Color[3];
         tileList = new ArrayList();
-        
-        mouseSelectionBtnGroup.add(placeTileBtn);
-        mouseSelectionBtnGroup.add(deleteTileBtn);
-        mouseSelectionBtnGroup.add(setBgBtn);
-        mouseSelectionBtnGroup.add(unsetBgBtn);
-
-        placeTileBtn.setActionCommand("PLACE");
-        deleteTileBtn.setActionCommand("DELETE");
-        setBgBtn.setActionCommand("SETBG");
-        unsetBgBtn.setActionCommand("UNSETBG");
-
-        placeTileBtn.addActionListener( this);
-        deleteTileBtn.addActionListener(this);
-        setBgBtn.addActionListener(this);
-        unsetBgBtn.addActionListener(this);
-
-        mouseSelectionBtnGroup.setSelected(placeTileBtn.getModel(), true);
 
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
@@ -211,37 +199,87 @@ public class ZbeCreateView extends FrameView implements ActionListener{
 
         });
     }
+    
+    public void initBackground(){
+        String imageLocation = "";
 
-    /**
-     * @param e
-     */
-    public void actionPerformed(ActionEvent e){
+        try{
+            imageLocation = new File(".").getCanonicalPath();
+            imageLocation += "/src/zbecreate/resources/background.png";
+            background = ImageIO.read(new File(imageLocation));
+        }catch(Exception ex){ ex.printStackTrace(); System.exit(1); }
 
-        if( e.getActionCommand().equals("SELECT") ){
-            System.out.println("MOUSE = SELECT");
-            mouse = MouseSelection.SELECT;
-        }
-        else if( e.getActionCommand().equals("PLACE")){
-
-            System.out.println("MOUSE = PLACE");
-            mouse = MouseSelection.PLACE;
-        }
-        else if( e.getActionCommand().equals("DELETE")){
-
-            System.out.println("MOUSE = DELETE");
-            mouse = MouseSelection.DELETE;
-        }
-        else if( e.getActionCommand().equals("SETBG")){
-            System.out.println("MOUSE = SETBG");
-            mouse = MouseSelection.SETBG;
-        }
-        else if( e.getActionCommand().equals("UNSETBG")){
-            System.out.println("MOUSE = UNSETBG");
-            mouse = MouseSelection.UNSETBG;
-        }
     }
 
+    private void initXMLButton(){
+        filter = new ZbeFilter("XML Document");
+        filter.add("xml");
 
+        xmlBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+                javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+                chooser.setFileFilter(filter);
+                int value = chooser.showSaveDialog(sidePanel);
+
+                if( value == javax.swing.JFileChooser.APPROVE_OPTION){
+                    String name = chooser.getSelectedFile().getAbsolutePath();
+                    try{
+                        exportXML(name);
+                    }catch(IOException ex){
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private void initButtons(){
+
+        ActionListener listener = new ActionListener(){
+
+            public void actionPerformed(ActionEvent e) {
+                if( e.getActionCommand().equals("SELECT") ){
+                    System.out.println("MOUSE = SELECT");
+                    mouse = MouseSelection.SELECT;
+                }
+                else if( e.getActionCommand().equals("PLACE")){
+                    System.out.println("MOUSE = PLACE");
+                    mouse = MouseSelection.PLACE;
+                }
+                else if( e.getActionCommand().equals("DELETE")){
+                    System.out.println("MOUSE = DELETE");
+                    mouse = MouseSelection.DELETE;
+                }
+                else if( e.getActionCommand().equals("SETBG")){
+                    System.out.println("MOUSE = SETBG");
+                    mouse = MouseSelection.SETBG;
+                }
+                else if( e.getActionCommand().equals("UNSETBG")){
+                    System.out.println("MOUSE = UNSETBG");
+                    mouse = MouseSelection.UNSETBG;
+                }
+            }
+        };
+
+        mouseSelectionBtnGroup.add(placeTileBtn);
+        mouseSelectionBtnGroup.add(deleteTileBtn);
+        mouseSelectionBtnGroup.add(setBgBtn);
+        mouseSelectionBtnGroup.add(unsetBgBtn);
+
+        placeTileBtn.setActionCommand("PLACE");
+        deleteTileBtn.setActionCommand("DELETE");
+        setBgBtn.setActionCommand("SETBG");
+        unsetBgBtn.setActionCommand("UNSETBG");
+
+        placeTileBtn.addActionListener( listener);
+        deleteTileBtn.addActionListener(listener);
+        setBgBtn.addActionListener(listener);
+        unsetBgBtn.addActionListener(listener);
+
+        mouseSelectionBtnGroup.setSelected(placeTileBtn.getModel(), true);
+
+    }
 
     /**
      * The showAboutBox function will create an instance of the ZbeCreateAboutBox
@@ -612,10 +650,10 @@ public class ZbeCreateView extends FrameView implements ActionListener{
      */
     public void exportXML(String filename) throws IOException{
 
-
         if( tileList == null || tileList.isEmpty() )
             return;
 
+        System.out.println("EXPORTING");
         BufferedWriter out = new BufferedWriter( new FileWriter(filename + ".xml") );
 
         out.write("<Zbebackground>\n");
@@ -640,8 +678,6 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         out.write("\n</Zbebackground>");
 
         out.close();
-        DrawingArea d;
-        //d.
 
     }
 
@@ -655,6 +691,7 @@ public class ZbeCreateView extends FrameView implements ActionListener{
          */
 
         private int size = ZbeTile.tileSize;
+        private BufferedImage image;
 
         public DrawingArea(){
             this.addMouseListener(this);
@@ -709,9 +746,13 @@ public class ZbeCreateView extends FrameView implements ActionListener{
         @Override
         public void paintComponent(Graphics g){
             super.paintComponent(g);
+
             Graphics2D graph = (Graphics2D)g;
 
             System.out.println("TILES = "  + tileList.size());
+            
+            graph.drawImage(background, null, this);
+
             for(ZbeTile temp : tileList){
                 graph.setColor(temp.getTileColor());
                 graph.fill(temp.getRect());
@@ -719,7 +760,4 @@ public class ZbeCreateView extends FrameView implements ActionListener{
 
         }
     }
-
-
-
 }
