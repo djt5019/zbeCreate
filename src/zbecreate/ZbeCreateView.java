@@ -1,9 +1,6 @@
 package zbecreate;
 
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
@@ -13,40 +10,27 @@ import org.jdesktop.application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import javax.imageio.ImageIO;
 import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import zbecreate.tile.ZbeTile;
 
 /**
  * The application's main frame.
  */
 public class ZbeCreateView extends FrameView{
 
-    private Color currentColor = Color.WHITE;
     private Color[] previousColors;
-    private ArrayList<ZbeTile> tileList;
-    private ArrayList<ZbeTile> wallList;
-    private BufferedImage background;
-    private ZbeTile[][] tileGraph;
     private ZbeFilter filter;
-    private int levelHeight;
-    private int levelWidth;
+
+    protected static Color currentColor = Color.WHITE;
+    protected static int levelHeight;
+    protected static int levelWidth;
 
     public ZbeCreateView(SingleFrameApplication app) {
         super(app);
-        super.getFrame().setName("zbeCreate");
 
         initComponents();
 
@@ -54,19 +38,13 @@ public class ZbeCreateView extends FrameView{
         levelWidth = drawingPanel.getPreferredSize().height;
         levelHeight = drawingPanel.getPreferredSize().width;
 
-        initBackground();
         initColorPanel();
         initPrevColorsPanel(prevColor1);
         initPrevColorsPanel(prevColor2);
         initPrevColorsPanel(prevColor3);
         initButtons();
-        initXMLButton();
-        
-        tileGraph = new ZbeTile[levelWidth][levelHeight];
         
         previousColors = new Color[3];
-        tileList = new ArrayList();
-        wallList = new ArrayList();
 
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
@@ -186,41 +164,7 @@ public class ZbeCreateView extends FrameView{
 
         });
     }
-    
-    private void initBackground(){
-        String imageLocation = "";
 
-        try{
-            imageLocation = new File(".").getCanonicalPath();
-            imageLocation += "/src/zbecreate/resources/background.png";
-            background = ImageIO.read(new File(imageLocation));
-        }catch(Exception ex){ ex.printStackTrace(); System.exit(1); }
-
-    }
-
-    private void initXMLButton(){
-        filter = new ZbeFilter("XML Document");
-        filter.add("xml");
-
-        xmlBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-
-                javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-                chooser.setFileFilter(filter);
-
-                int value = chooser.showSaveDialog(sidePanel);
-
-                if( value == javax.swing.JFileChooser.APPROVE_OPTION){
-                    String name = chooser.getSelectedFile().getAbsolutePath();
-                    try{
-                        exportXML(name,tileList,wallList);
-                    }catch(IOException ex){
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
 
     private void initButtons(){
 
@@ -272,238 +216,6 @@ public class ZbeCreateView extends FrameView{
         ZbeCreateApp.getApplication().show(aboutBox);
     }
 
-    /**
-     * Exports the tile information in the tileList and wallList to a file and location
-     * of the users choice. This will iterate through the ArrayList of Tiles getting
-     * the tileID, paletteID, and horizontal/vertical flip values.
-     * Upon each iteration the tile information will be written to the file
-     * "filename.xml".
-     * @param filename The name of the file the user wishes to write to.
-     * @throws IOException
-     */
-    public void exportXML(String filename, ArrayList<ZbeTile> tiles, ArrayList<ZbeTile> walls) throws IOException{
-        
-        if(walls == null && tiles == null)
-            return;
-
-        System.out.println("EXPORTING");
-        BufferedWriter out = new BufferedWriter( new FileWriter(filename + ".xml") );
-
-        if( walls != null ){
-            out.write("<zbe>\n<levels>\n<objects>\n");
-            for(ZbeTile s : walls){
-                int x = s.getXcoord();
-                int y = s.getYcoord();
-                int id= s.getTileID();
-
-                String str = "\t<object id=\""+id+"\" x=\""+x+"\" y=\""+y+"\" weight=\"255\" hgrav=\"0\" vgrav=\"0\"/> </object>\n";
-
-                out.write(str);
-            }
-        }
-
-        if( tiles != null){
-            out.write("\n</zbe>\n</levels>\n</objects>\n\n");
-            out.write("<Zbebackground>\n\t<background>\n\t\t<row>\n");
-            for( ZbeTile s : tiles){
-                String id = "id = \"" + s.getTileID() + "\"\n";
-                String pa = "palette = \"" + s.getPaletteID() + "\"\n";
-                String hF = "hflip = \"" + s.getHFlipValue() + "\"\n";
-                String vF = "hflip = \"" + s.getVFlipValue() + "\"\n";
-
-                String statement = "\t\t\t<file   " + id +
-                                       "\t\t\t\t" + pa +
-                                       "\t\t\t\t" + hF +
-                                       "\t\t\t\t" + vF +
-                                       "\t\t\t/>\n";
-
-                out.write(statement);
-            }
-            out.write("\n\t\t</row>\n\t</background>\n\n</Zbebackground>");
-        }
-
-        out.close();
-    }
-
-    private class DrawingArea extends JPanel implements MouseListener, MouseMotionListener{
-        /**
-         * Will contain the functions that are relevant to the drawing area. The
-         * purpose of this class is to create a panel upon which the user can draw.
-         * The DrawingArea class will first initalize the mouse action listeners then
-         * await for the user to interact with the panel.
-         */
-
-        private int size = ZbeTile.tileSize;
-        private boolean mouseDragging = false;
-
-        public DrawingArea(){
-            this.addMouseListener(this);
-            this.addMouseMotionListener(this);
-        }
-
-        /**
-         * Attempts to either place or remove tile at the location passed.
-         * @param e The mouse event passed to the function; used to get X and Y coordinates.
-         */
-        public void mouseClicked(MouseEvent e)  {
-            int x = e.getX();
-            int y = e.getY();
-
-            if(mouse.equals(MouseSelection.PLACE))
-                placeTile(x,y);
-            else if(mouse.equals(MouseSelection.DELETE))
-                eraseTile(x,y);
-            repaint();
-        }
-
-        /**
-         * Will place a new tile at the coordinates (x,y) on the drawing panel,
-         * if the tile already exists in that location its color will be updated.
-         * This function will calculate the size of the tile which is
-         * by default 8x8 pixels.  After calculating the correct size and
-         * creating a rectangle that will fill the entire tile it will add
-         * it into the tileList.
-         * @param x The X coordinate where the user clicked
-         * @param y The Y coordinate where the user clicked
-         */
-        public void placeTile(int x, int y){
-
-            if( !mouse.equals(MouseSelection.PLACE))
-                return;
-
-            int pid   = currentColor.getRGB();
-            int hFlip = hFlipCbox.getSelectedIndex();
-            int vFlip = vFlipCbox.getSelectedIndex();
-            int modX  = ((x - (x % size)));
-            int modY  = ((y - (y % size)));
-            int tid   = modX + modY*levelWidth;
-
-            boolean wall = (tileCbox.getSelectedIndex() == 1) ? true:false;
-            System.out.println(wall);
-            if(modX < 0 || modY < 0)
-                return;
-
-            Rectangle r = new Rectangle(modX,modY,size,size);
-
-            ZbeTile t = new ZbeTile(currentColor, tid, pid, hFlip, vFlip, modX, modY,wall, r);
-
-            if( tileGraph[modX][modY] == null){
-                tileGraph[modX][modY] = t;
-
-                if( wall == true)
-                    wallList.add(t);
-                else
-                    tileList.add(t);
-            }
-            else{
-                //If the tile has already been placed update the color
-                ZbeTile temp = tileGraph[modX][modY];
-
-                if(temp.isWallTile() == wall)
-                    temp.setColor(currentColor);
-            }
-        }
-
-        /**
-         * Erases the tile located at position (x,y) on the drawing panel and
-         * removes it from the ArrayList.
-         * @param x  The X coordinate on the drawing panel
-         * @param y  The Y coordinate on the drawing panel
-         */
-        public void eraseTile(int x, int y){
-            int modX  = ((x - (x % size)));
-            int modY  = ((y - (y % size)));
-            int tid   = modX + modY*levelWidth;
-
-            if( modX < 0 || modY < 0)
-                return;
-
-            if(tileGraph[modX][modY] == null)
-                return;
-
-            tileGraph[modX][modY] = null;
-
-            for(ZbeTile temp : tileList){
-                if(temp.getTileID() == tid){
-                    if(temp.isWallTile() == true)
-                        wallList.remove(temp);
-                    else
-                        tileList.remove(temp);
-                    break;
-                }
-            }
-        }
-
-        /**
-         * Will initate the dragging sequence, if the user is already dragging
-         * then ignore any additional events until the user stops dragging.
-         * @param e The mouse event passed to the function
-         */
-        public void mousePressed(MouseEvent e)  {
-            if(mouseDragging == true)
-                return;
-
-            mouseDragging = true;
-        }
-
-        /**
-         * During the dragging sequence the function will attempt to either place
-         * or erase tiles over the area of the drawing board where the user drags.
-         * @param e The mouse event passed to the function
-         */
-        public void mouseDragged(MouseEvent e) {
-            if( !mouseDragging)
-                return;
-
-            if(mouse.equals(MouseSelection.PLACE))
-                placeTile(e.getX(), e.getY());
-            else if(mouse.equals(MouseSelection.DELETE))
-                eraseTile(e.getX(), e.getY());
-
-            repaint();
-        }
-
-        /**
-         * Sets the mouseDragging flag to false
-         * @param e The mouse event passed to the function.
-         */
-        public void mouseReleased(MouseEvent e) { mouseDragging = false; }
-        /**Unused*/
-        public void mouseMoved(MouseEvent e)    {}
-        /**Unused*/
-        public void mouseEntered(MouseEvent e)  {}
-        /**Unused*/
-        public void mouseExited(MouseEvent e)   {}
-
-        /**
-         * Draws the background image of the grey tiles upon the board then iterates
-         * through the list of background and wall tiles and draws each.
-         * @param g The graphics data from the drawing panel.
-         */
-        @Override
-        public void paintComponent(Graphics g){
-            super.paintComponent(g);
-
-            Graphics2D graph = (Graphics2D)g;
-
-            System.out.println("TILES = "  + (tileList.size()+wallList.size()));
-
-            graph.drawImage(background, null, this);
-
-            for(ZbeTile temp : tileList){
-                graph.setColor(temp.getTileColor());
-                graph.fill(temp.getRect());
-            }
-
-            for(ZbeTile temp : wallList){
-                graph.setColor(temp.getTileColor());
-                graph.fill(temp.getRect());
-            }
-
-        }
-    }
-
-
     // <editor-fold defaultstate="collapsed" desc="Auto Generated Code">
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -532,7 +244,7 @@ public class ZbeCreateView extends FrameView{
         tileCbox = new javax.swing.JComboBox();
         jLabel6 = new javax.swing.JLabel();
         drawScrollPanel = new javax.swing.JScrollPane();
-        drawingPanel = new DrawingArea();
+        drawingPanel = new ZbeDrawingArea();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
@@ -786,7 +498,7 @@ public class ZbeCreateView extends FrameView{
     public static javax.swing.JPanel colorPanel;
     protected javax.swing.JRadioButton deleteTileBtn;
     protected javax.swing.JScrollPane drawScrollPanel;
-    protected javax.swing.JPanel drawingPanel;
+    protected static javax.swing.JPanel drawingPanel;
     public static javax.swing.JComboBox hFlipCbox;
     private javax.swing.JFrame jFrame1;
     private javax.swing.JLabel jLabel1;
@@ -808,15 +520,15 @@ public class ZbeCreateView extends FrameView{
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JRadioButton setBgBtn;
     public static javax.swing.JCheckBoxMenuItem showGridlinesOptionMenuItem;
-    private javax.swing.JPanel sidePanel;
+    protected static javax.swing.JPanel sidePanel;
     private javax.swing.JLabel spritePropertiesLabel;
     private javax.swing.ButtonGroup spriteSelectionBtnGroup;
     private javax.swing.JLabel statusAnimationLabel;
     private javax.swing.JLabel statusMessageLabel;
     private javax.swing.JPanel statusPanel;
-    private javax.swing.JComboBox tileCbox;
+    protected static javax.swing.JComboBox tileCbox;
     public static javax.swing.JComboBox vFlipCbox;
-    private javax.swing.JButton xmlBtn;
+    protected static javax.swing.JButton xmlBtn;
     // End of variables declaration//GEN-END:variables
     //</editor-fold>
     // </editor-fold>
