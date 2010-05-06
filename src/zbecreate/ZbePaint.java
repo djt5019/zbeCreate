@@ -16,6 +16,9 @@ import zbecreate.sprite.*;
 
 import static zbecreate.ZbeCreateView.*;
 
+/**
+ * Handles the loading, drawing, and deletion of sprites.
+ */
 public class ZbePaint extends JPanel implements MouseMotionListener, MouseListener {
 
     private ArrayList<ZbeBaseSprite> list;

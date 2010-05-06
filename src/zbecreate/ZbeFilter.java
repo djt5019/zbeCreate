@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * @author dan
+ * Provides a mechanism to create custom file filters for the fileChooser.
  */
 class ZbeFilter extends javax.swing.filechooser.FileFilter{
     /**
@@ -67,4 +67,6 @@ class ZbeFilter extends javax.swing.filechooser.FileFilter{
     public String getDescription() {
         return desc;
     }
+
+    public ArrayList getExtensions(){ return exts; }
 }

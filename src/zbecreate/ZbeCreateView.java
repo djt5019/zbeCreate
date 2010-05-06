@@ -124,8 +124,8 @@ public class ZbeCreateView extends FrameView{
     }
 
     /**
-     * This function will help keep track of the colors that the user chooses
-     * by storing them into an array.  As a user selects a new color the old
+     * Shifts the previously used colors in the array to make room for the previously
+     * used color.  As a user selects a new color the old
      * ones are shifted down by one to make room for the new color. The
      * oldest color in the array is overwritten.
      * @param newColor The color that will be stored in the most recent color block
@@ -213,7 +213,7 @@ public class ZbeCreateView extends FrameView{
                 if( value == javax.swing.JFileChooser.APPROVE_OPTION){
                     String name = chooser.getSelectedFile().getAbsolutePath();
                     try{
-                        exportXML(name);
+                        exportXML(name,tileList,wallList);
                     }catch(IOException ex){
                         ex.printStackTrace();
                     }
@@ -273,20 +273,25 @@ public class ZbeCreateView extends FrameView{
     }
 
     /**
-     * This will iterate through the ArrayList of Tiles getting the tileID,
-     * paletteID, and horizontal/vertical flip values.  Upon each iteration
-     * the tile information will be written to the file "filename.xml".
+     * Exports the tile information in the tileList and wallList to a file and location
+     * of the users choice. This will iterate through the ArrayList of Tiles getting
+     * the tileID, paletteID, and horizontal/vertical flip values.
+     * Upon each iteration the tile information will be written to the file
+     * "filename.xml".
      * @param filename The name of the file the user wishes to write to.
      * @throws IOException
      */
-    public void exportXML(String filename) throws IOException{
+    public void exportXML(String filename, ArrayList<ZbeTile> tiles, ArrayList<ZbeTile> walls) throws IOException{
+        
+        if(walls == null && tiles == null)
+            return;
 
         System.out.println("EXPORTING");
         BufferedWriter out = new BufferedWriter( new FileWriter(filename + ".xml") );
 
-        if( !wallList.isEmpty() ){
+        if( walls != null ){
             out.write("<zbe>\n<levels>\n<objects>\n");
-            for(ZbeTile s : wallList){
+            for(ZbeTile s : walls){
                 int x = s.getXcoord();
                 int y = s.getYcoord();
                 int id= s.getTileID();
@@ -297,10 +302,10 @@ public class ZbeCreateView extends FrameView{
             }
         }
 
-        if( !tileList.isEmpty() ){
+        if( tiles != null){
             out.write("\n</zbe>\n</levels>\n</objects>\n\n");
             out.write("<Zbebackground>\n\t<background>\n\t\t<row>\n");
-            for( ZbeTile s : tileList){
+            for( ZbeTile s : tiles){
                 String id = "id = \"" + s.getTileID() + "\"\n";
                 String pa = "palette = \"" + s.getPaletteID() + "\"\n";
                 String hF = "hflip = \"" + s.getHFlipValue() + "\"\n";
@@ -336,6 +341,10 @@ public class ZbeCreateView extends FrameView{
             this.addMouseMotionListener(this);
         }
 
+        /**
+         * Attempts to either place or remove tile at the location passed.
+         * @param e The mouse event passed to the function; used to get X and Y coordinates.
+         */
         public void mouseClicked(MouseEvent e)  {
             int x = e.getX();
             int y = e.getY();
@@ -348,6 +357,8 @@ public class ZbeCreateView extends FrameView{
         }
 
         /**
+         * Will place a new tile at the coordinates (x,y) on the drawing panel,
+         * if the tile already exists in that location its color will be updated.
          * This function will calculate the size of the tile which is
          * by default 8x8 pixels.  After calculating the correct size and
          * creating a rectangle that will fill the entire tile it will add
@@ -356,6 +367,7 @@ public class ZbeCreateView extends FrameView{
          * @param y The Y coordinate where the user clicked
          */
         public void placeTile(int x, int y){
+
             if( !mouse.equals(MouseSelection.PLACE))
                 return;
 
@@ -367,7 +379,7 @@ public class ZbeCreateView extends FrameView{
             int tid   = modX + modY*levelWidth;
 
             boolean wall = (tileCbox.getSelectedIndex() == 1) ? true:false;
-
+            System.out.println(wall);
             if(modX < 0 || modY < 0)
                 return;
 
@@ -377,6 +389,7 @@ public class ZbeCreateView extends FrameView{
 
             if( tileGraph[modX][modY] == null){
                 tileGraph[modX][modY] = t;
+
                 if( wall == true)
                     wallList.add(t);
                 else
@@ -391,6 +404,12 @@ public class ZbeCreateView extends FrameView{
             }
         }
 
+        /**
+         * Erases the tile located at position (x,y) on the drawing panel and
+         * removes it from the ArrayList.
+         * @param x  The X coordinate on the drawing panel
+         * @param y  The Y coordinate on the drawing panel
+         */
         public void eraseTile(int x, int y){
             int modX  = ((x - (x % size)));
             int modY  = ((y - (y % size)));
@@ -415,6 +434,11 @@ public class ZbeCreateView extends FrameView{
             }
         }
 
+        /**
+         * Will initate the dragging sequence, if the user is already dragging
+         * then ignore any additional events until the user stops dragging.
+         * @param e The mouse event passed to the function
+         */
         public void mousePressed(MouseEvent e)  {
             if(mouseDragging == true)
                 return;
@@ -422,6 +446,11 @@ public class ZbeCreateView extends FrameView{
             mouseDragging = true;
         }
 
+        /**
+         * During the dragging sequence the function will attempt to either place
+         * or erase tiles over the area of the drawing board where the user drags.
+         * @param e The mouse event passed to the function
+         */
         public void mouseDragged(MouseEvent e) {
             if( !mouseDragging)
                 return;
@@ -434,18 +463,30 @@ public class ZbeCreateView extends FrameView{
             repaint();
         }
 
+        /**
+         * Sets the mouseDragging flag to false
+         * @param e The mouse event passed to the function.
+         */
         public void mouseReleased(MouseEvent e) { mouseDragging = false; }
+        /**Unused*/
         public void mouseMoved(MouseEvent e)    {}
+        /**Unused*/
         public void mouseEntered(MouseEvent e)  {}
+        /**Unused*/
         public void mouseExited(MouseEvent e)   {}
 
+        /**
+         * Draws the background image of the grey tiles upon the board then iterates
+         * through the list of background and wall tiles and draws each.
+         * @param g The graphics data from the drawing panel.
+         */
         @Override
         public void paintComponent(Graphics g){
             super.paintComponent(g);
 
             Graphics2D graph = (Graphics2D)g;
 
-            System.out.println("TILES = "  + tileList.size()+wallList.size());
+            System.out.println("TILES = "  + (tileList.size()+wallList.size()));
 
             graph.drawImage(background, null, this);
 
