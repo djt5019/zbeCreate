@@ -1,3 +1,4 @@
 src/META-INF/*
 build/*
 dist/lib/*
+build/*

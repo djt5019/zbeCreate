@@ -7,7 +7,6 @@ import java.awt.Image;
 import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -239,11 +238,6 @@ public class ZbePaint extends JPanel implements MouseMotionListener, MouseListen
                 background = ImageIO.read( new File(imageLocation));
             }catch(Exception ex){ }
         }
-        else if( mouse.equals(MouseSelection.UNSETBG)){
-            background = null;
-            this.setBackground(Color.WHITE);
-        }
-
         repaint();
     }
 

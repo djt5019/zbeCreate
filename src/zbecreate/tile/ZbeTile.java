@@ -27,9 +27,10 @@ public class ZbeTile{
     private Color myColor;
     private int xCoord;
     private int yCoord;
+    private boolean wallTile;
     private Rectangle rect;
 
-    public ZbeTile(Color c, int tid, int pid, int hFlip, int vFlip, int x, int y, Rectangle r){
+    public ZbeTile(Color c, int tid, int pid, int hFlip, int vFlip, int x, int y, boolean wall, Rectangle r){
         this.tileID     = tid;
         this.paletteID  = pid;
         this.hFlipValue = hFlip;
@@ -38,6 +39,7 @@ public class ZbeTile{
         this.xCoord     = x;
         this.yCoord     = y;
         this.rect       = r;
+        this.wallTile   = wall;
     }
 
     public Color getTileColor() { return this.myColor; }
@@ -49,5 +51,6 @@ public class ZbeTile{
     public int getXcoord(){ return this.xCoord; }
     public int getYcoord(){ return this.yCoord;}
 
+    public boolean isWallTile(){ return wallTile; }
     public void setColor(Color newColor){ this.myColor = newColor; }
 }
